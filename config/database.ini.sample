@@ -1,0 +1,4 @@
+Server   = SERVER
+Database = DATABASE_NAME
+Username = USERNAME
+Password = PASSWORD

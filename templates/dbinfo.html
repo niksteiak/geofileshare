@@ -1,0 +1,19 @@
+{{define "title_content"}}
+    {{ .Title }}
+{{end}}
+
+{{define "main_content"}}
+<h2>{{ .Greeting }}</h2>
+<div>
+    <ul>
+        {{ range .Names }}
+        <li>{{.}}</li>
+        {{ end }}
+    </ul>
+</div>
+<div>
+    <p>
+        <a href="/">Return Home</a>
+    </p>
+</div>
+{{end}}
