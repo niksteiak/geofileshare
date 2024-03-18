@@ -28,6 +28,9 @@ func main() {
     router := http.NewServeMux()
     tmpl := make(map[string]*template.Template)
 
+    fs := http.FileServer(http.Dir("./static/"))
+    router.Handle("GET /static/", http.StripPrefix("/static/", fs))
+
     router.HandleFunc("GET /greeting", func(w http.ResponseWriter, r *http.Request) {
         tmpl["greeting.html"] = template.Must(template.ParseFiles("templates/greeting.html", "templates/_base.html"))
 
@@ -72,9 +75,6 @@ func main() {
         tmpl["index.html"].ExecuteTemplate(w, "base", data)
     })
 
-
-    fs := http.FileServer(http.Dir("static/"))
-    http.Handle("/static/", http.StripPrefix("/static/", fs))
 
     http.ListenAndServe(":85", router)
 }
