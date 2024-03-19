@@ -15,6 +15,7 @@ type PageData struct {
     Title string
     Greeting string
     Names []string
+    Users []User
 }
 
 type DatabaseConnection struct {
@@ -22,6 +23,14 @@ type DatabaseConnection struct {
     Database string
     Username string
     Password string
+}
+
+type User struct {
+    Id         int
+    Username   string
+    Active     bool
+    FirstName string
+    LastName  string
 }
 
 func main() {
@@ -42,28 +51,18 @@ func main() {
         tmpl["greeting.html"].ExecuteTemplate(w, "base", data)
     })
 
-    router.HandleFunc("POST /greeting", func(w http.ResponseWriter, r *http.Request) {
-        username := r.FormValue("username")
-
-        data := PageData {
-            Title: "Welcome to Geofileshare",
-            Greeting: fmt.Sprintf("Hello, %v, good to see you can post here", username),
-        }
-        tmpl["greeting.html"].ExecuteTemplate(w, "base", data)
-    })
-
-    router.HandleFunc("GET /database", func(w http.ResponseWriter, r *http.Request) {
-
+    router.HandleFunc("GET /users", func(w http.ResponseWriter, r *http.Request) {
         tmpl["dbinfo.html"] = template.Must(template.ParseFiles("templates/dbinfo.html", "templates/_base.html"))
 
-        dbNames := ReadDatabaseNames()
+        dbUsers := ReadDatabaseUsers()
 
         data := PageData {
-            Title: "Database Information",
-            Greeting: "The Names from the database are the following",
-            Names: dbNames,
+            Title: "Registered Users",
+            Greeting: "The users that have access to Geofileshare are:",
+            Users: dbUsers,
         }
         tmpl["dbinfo.html"].ExecuteTemplate(w, "base", data)
+
     })
 
     router.HandleFunc("GET /", func(w http.ResponseWriter, r *http.Request) {
@@ -94,7 +93,7 @@ func ReadConnectionInfo() string {
     return connectionString
 }
 
-func ReadDatabaseNames() []string {
+func ReadDatabaseUsers() []User {
     connectionString := ReadConnectionInfo()
 
     db, err := sql.Open("mysql", connectionString)
@@ -106,23 +105,23 @@ func ReadDatabaseNames() []string {
         log.Fatal(err)
     }
 
-    var retNames []string
+    var retUsers []User
 
-    rows, err := db.Query("SELECT `name` FROM project")
+    rows, err := db.Query("SELECT id, username, active, first_name, last_name FROM user")
     if err != nil {
         log.Fatal(err)
     }
     defer rows.Close()
 
     for rows.Next() {
-        var curProject string
-        err := rows.Scan(&curProject)
+        var u User
+        err := rows.Scan(&u.Id, &u.Username, &u.Active, &u.FirstName, &u.LastName)
         if err != nil {
             log.Fatal(err)
         }
 
-        retNames = append(retNames, curProject)
+        retUsers = append(retUsers, u)
     }
 
-    return retNames
+    return retUsers
 }
