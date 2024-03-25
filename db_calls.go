@@ -6,21 +6,12 @@ import (
     "database/sql"
 
     _ "github.com/go-sql-driver/mysql"
-    "github.com/gookit/ini/v2"
 )
 
 func ReadConnectionInfo() string {
-    err := ini.LoadFiles("config/database.ini")
-    if err != nil {
-        panic(err)
-    }
-
-    dbConnectionInfo := &DatabaseConnection{}
-    ini.MapStruct(ini.DefSection(), dbConnectionInfo)
-
     connectionString := fmt.Sprintf("%v:%v@(%v:3306)/%v?parseTime=true",
-        dbConnectionInfo.Username, dbConnectionInfo.Password,
-        dbConnectionInfo.Server, dbConnectionInfo.Database)
+        GFSConfig.Database.Username, GFSConfig.Database.Password,
+        GFSConfig.Database.Server, GFSConfig.Database.Database)
     return connectionString
 }
 

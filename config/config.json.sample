@@ -1,0 +1,14 @@
+{
+    "Database": {
+        "Server":   "",
+        "Database": "",
+        "Username": "",
+        "Password": ""
+    },
+    "AuthInfo": {
+        "ClientId": "",
+        "ClientSecret": "",
+        "AuthURI": "https://accounts.google.com/o/oauth2/auth",
+        "TokenURI": "https://oauth2.googleapis.com/token"
+    }
+}
