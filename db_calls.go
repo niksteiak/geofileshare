@@ -47,3 +47,22 @@ func ReadDatabaseUsers() []User {
 
     return retUsers
 }
+
+func GetUser(email string) (bool, User) {
+    connectionString := ReadConnectionInfo()
+
+    db, err := sql.Open("mysql", connectionString)
+    if err != nil {
+        log.Fatal(err)
+    }
+
+    var user User
+    query := "SELECT id, username, active, first_name, last_name FROM users where username = ?"
+    err = db.QueryRow(query, email).Scan(&user.Id, &user.Username, &user.Active, &user.FirstName, &user.LastName)
+    if err != nil {
+        log.Fatal(err.Error())
+        return false, user
+    }
+
+    return user.Active, user
+}
