@@ -9,18 +9,26 @@ import (
 	"os"
 
 	_ "github.com/go-sql-driver/mysql"
+
+	"github.com/gorilla/sessions"
 )
 
 var GFSConfig Config
 
 func main() {
 	GFSConfig = LoadConfiguration("config/config.json")
+	key := []byte(GFSConfig.SessionKey)
+	store = sessions.NewCookieStore(key)
 
 	router := http.NewServeMux()
 	tmpl := make(map[string]*template.Template)
 
 	fs := http.FileServer(http.Dir("./static/"))
 	router.Handle("GET /static/", http.StripPrefix("/static/", fs))
+
+	router.HandleFunc("GET /auth/google/login", oauthGoogleLogin)
+	router.HandleFunc("GET /auth/google/callback", oauthGoogleCallback)
+	router.HandleFunc("GET /logout", logout)
 
 	router.HandleFunc("GET /greeting", func(w http.ResponseWriter, r *http.Request) {
 		tmpl["greeting.html"] = template.Must(template.ParseFiles("templates/greeting.html", "templates/_base.html"))
@@ -33,7 +41,7 @@ func main() {
 		tmpl["greeting.html"].ExecuteTemplate(w, "base", data)
 	})
 
-	router.HandleFunc("GET /users", func(w http.ResponseWriter, r *http.Request) {
+	router.HandleFunc("GET /users", Authorize(func(w http.ResponseWriter, r *http.Request) {
 		tmpl["dbinfo.html"] = template.Must(template.ParseFiles("templates/dbinfo.html", "templates/_base.html"))
 
 		dbUsers := ReadDatabaseUsers()
@@ -45,7 +53,7 @@ func main() {
 		}
 		tmpl["dbinfo.html"].ExecuteTemplate(w, "base", data)
 
-	})
+	}))
 
 	router.HandleFunc("GET /", func(w http.ResponseWriter, r *http.Request) {
 		data := PageData{
@@ -56,10 +64,20 @@ func main() {
 		tmpl["index.html"].ExecuteTemplate(w, "base", data)
 	})
 
-	router.HandleFunc("GET /auth/google/login", oauthGoogleLogin)
-	router.HandleFunc("GET /auth/google/callback", oauthGoogleCallback)
 
 	http.ListenAndServe(":85", router)
+}
+
+func Authorize(f http.HandlerFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		authorized := AuthorizationCheck(w, r)
+		if !authorized {
+			http.Error(w, "Not Authorized", http.StatusForbidden)
+			return
+		}
+
+		f(w, r)
+	}
 }
 
 func LoadConfiguration(file string) Config {

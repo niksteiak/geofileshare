@@ -8,11 +8,20 @@ type PageData struct {
 }
 
 type User struct {
-    Id         int
-    Username   string
-    Active     bool
-    FirstName string
-    LastName  string
+    Id          int
+    Username    string
+    Email       string
+    Active      bool
+    FirstName   string
+    LastName    string
+}
+
+type GoogleUserAuth struct {
+    Id      string `json:"id"`
+    Email       string `json:"email"`
+    VerifiedEmail       bool `json:"verified_email"`
+    Picture     string `json:"picture"`
+    HD      string `json:"hd"`
 }
 
 type Config struct {
@@ -28,6 +37,7 @@ type Config struct {
         AuthURI string `json:"AuthURI"`
         TokenURI string `json:"TokenURI"`
     } `json:"AuthInfo"`
+    SessionKey string `json:"SessionKey"`
 }
 
 

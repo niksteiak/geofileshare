@@ -10,5 +10,6 @@
         "ClientSecret": "",
         "AuthURI": "https://accounts.google.com/o/oauth2/auth",
         "TokenURI": "https://oauth2.googleapis.com/token"
-    }
+    },
+    "SessionKey": ""
 }
