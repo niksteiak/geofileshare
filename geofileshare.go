@@ -26,17 +26,16 @@ func main() {
 	fs := http.FileServer(http.Dir("./static/"))
 	router.Handle("GET /static/", http.StripPrefix("/static/", fs))
 
-	router.HandleFunc("GET /auth/google/login", oauthGoogleLogin)
+	router.HandleFunc("GET /login", oauthGoogleLogin)
 	router.HandleFunc("GET /auth/google/callback", oauthGoogleCallback)
 	router.HandleFunc("GET /logout", logout)
 
 	router.HandleFunc("GET /greeting", func(w http.ResponseWriter, r *http.Request) {
 		tmpl["greeting.html"] = template.Must(template.ParseFiles("templates/greeting.html", "templates/_base.html"))
 
-		data := PageData{
-			Title:    "Welcome to Geofileshare",
-			Greeting: fmt.Sprintf("Hello, I see you are vistiting the page on %v\n", r.URL.Path),
-		}
+		data := getSessionData(r)
+		data.Title ="Welcome to Geofileshare"
+		data.Greeting = fmt.Sprintf("Hello, I see you are vistiting the page on %v\n", r.URL.Path)
 
 		tmpl["greeting.html"].ExecuteTemplate(w, "base", data)
 	})
@@ -44,28 +43,40 @@ func main() {
 	router.HandleFunc("GET /users", Authorize(func(w http.ResponseWriter, r *http.Request) {
 		tmpl["dbinfo.html"] = template.Must(template.ParseFiles("templates/dbinfo.html", "templates/_base.html"))
 
-		dbUsers := ReadDatabaseUsers()
+		data := getSessionData(r)
+		data.Title ="Registered Users"
+		data.Greeting = "The users that have access to Geofileshare are:"
+		data.Users = ReadDatabaseUsers()
 
-		data := PageData{
-			Title:    "Registered Users",
-			Greeting: "The users that have access to Geofileshare are:",
-			Users:    dbUsers,
-		}
 		tmpl["dbinfo.html"].ExecuteTemplate(w, "base", data)
-
 	}))
 
 	router.HandleFunc("GET /", func(w http.ResponseWriter, r *http.Request) {
-		data := PageData{
-			Title:    "Welcome to Geofileshare",
-			Greeting: "This is home... ...page :)",
-		}
+		data := getSessionData(r)
+		data.Title ="Welcome to Geofileshare"
+		data.Greeting = "This is home... ...page :)"
+
 		tmpl["index.html"] = template.Must(template.ParseFiles("templates/index.html", "templates/_base.html"))
 		tmpl["index.html"].ExecuteTemplate(w, "base", data)
 	})
 
 
 	http.ListenAndServe(":85", router)
+}
+
+func getSessionData(r *http.Request) PageData {
+	data := PageData{}
+	loggedInUser, err := LoggedInUser(r)
+	if err != nil {
+		data.ErrorMessage = "User not logged in or user not found"
+		data.UserAuthenticated = false
+		return data
+	}
+
+	data.UserAuthenticated = true
+	data.User = loggedInUser
+	data.ErrorMessage = ""
+	return data
 }
 
 func Authorize(f http.HandlerFunc) http.HandlerFunc {

@@ -5,6 +5,7 @@ import (
 	"crypto/rand"
 	"encoding/base64"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"log"
@@ -21,6 +22,55 @@ const GFSBaseUrl = "http://localhost:85"
 const SessionCookie = "geofilesession"
 
 var store sessions.Store
+
+func LoggedInUser(r *http.Request) (User, error) {
+	session, _ := store.Get(r, SessionCookie)
+
+	var user User
+	if auth, ok := session.Values["authenticated"].(bool); !ok || !auth {
+		return user, errors.New("No autheticated User found")
+	}
+
+	userEmail := session.Values["email"].(string)
+	user, err := GetUser(userEmail)
+	if err != nil {
+		return user, err
+	}
+
+	return user, err
+}
+
+func AuthorizationCheck(w http.ResponseWriter, r *http.Request) bool {
+	session, _ := store.Get(r, SessionCookie)
+
+	if auth, ok := session.Values["authenticated"].(bool); !ok || !auth {
+		return false
+	}
+
+	return true
+}
+
+func loginUser(user User, w http.ResponseWriter, r *http.Request) {
+	session, _ := store.Get(r, SessionCookie)
+	session.Values["authenticated"] = true
+	session.Values["user-id"] = user.Id
+	session.Values["username"] = user.Username
+	session.Values["email"] = user.Email
+
+	session.Save(r, w)
+}
+
+func logout(w http.ResponseWriter, r *http.Request) {
+	session, _ := store.Get(r, SessionCookie)
+	session.Values["authenticated"] = false
+	session.Values["user-id"] = ""
+	session.Values["username"] = ""
+	session.Values["email"] = ""
+
+	session.Save(r, w)
+	http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
+}
+
 
 func oauthGoogleLogin(w http.ResponseWriter, r *http.Request) {
 	oauthstate := generateStateOauthCookie(w, r)
@@ -57,35 +107,6 @@ func oauthGoogleCallback(w http.ResponseWriter, r *http.Request) {
 
 	loginUser(user, w, r)
 	http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
-}
-
-func loginUser(user User, w http.ResponseWriter, r *http.Request) {
-	session, _ := store.Get(r, SessionCookie)
-	session.Values["authenticated"] = true
-	session.Values["user-id"] = user.Id
-	session.Values["username"] = user.Username
-
-	session.Save(r, w)
-}
-
-func logout(w http.ResponseWriter, r *http.Request) {
-	session, _ := store.Get(r, SessionCookie)
-	session.Values["authenticated"] = false
-	session.Values["user-id"] = ""
-	session.Values["username"] = ""
-
-	session.Save(r, w)
-	http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
-}
-
-func AuthorizationCheck(w http.ResponseWriter, r *http.Request) bool {
-	session, _ := store.Get(r, SessionCookie)
-
-	if auth, ok := session.Values["authenticated"].(bool); !ok || !auth {
-		return false
-	}
-
-	return true
 }
 
 func getUserDataFromGoogle(code string) ([]byte, error) {

@@ -1,10 +1,13 @@
 package main
 
 type PageData struct {
-    Title string
-    Greeting string
-    Names []string
-    Users []User
+    Title        string
+    Greeting     string
+    Names        []string
+    Users        []User
+    User         User
+    UserAuthenticated bool
+    ErrorMessage string
 }
 
 type User struct {
@@ -39,5 +42,3 @@ type Config struct {
     } `json:"AuthInfo"`
     SessionKey string `json:"SessionKey"`
 }
-
-
