@@ -26,6 +26,10 @@ func main() {
 	fs := http.FileServer(http.Dir("./static/"))
 	router.Handle("GET /static/", http.StripPrefix("/static/", fs))
 
+	router.HandleFunc("GET /favicon.ico", func(w http.ResponseWriter, r *http.Request) {
+		http.ServeFile(w, r, "./static/images/favicon.ico")
+	})
+
 	router.HandleFunc("GET /login", oauthGoogleLogin)
 	router.HandleFunc("GET /auth/google/callback", oauthGoogleCallback)
 	router.HandleFunc("GET /logout", logout)
@@ -77,6 +81,10 @@ func getSessionData(r *http.Request) PageData {
 	data.User = loggedInUser
 	data.ErrorMessage = ""
 	return data
+}
+
+func faviconHandler(w http.ResponseWriter, r *http.Request) {
+	http.ServeFile(w, r, "/static/images/favicon.ico")
 }
 
 func Authorize(f http.HandlerFunc) http.HandlerFunc {
