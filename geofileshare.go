@@ -7,6 +7,8 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"io"
+	"path/filepath"
 
 	_ "github.com/go-sql-driver/mysql"
 
@@ -53,6 +55,54 @@ func main() {
 		data.Users = ReadDatabaseUsers()
 
 		tmpl["dbinfo.html"].ExecuteTemplate(w, "base", data)
+	}))
+
+	router.HandleFunc("GET /upload", Authorize(func(w http.ResponseWriter, r *http.Request) {
+		tmpl["upload.html"] = template.Must(template.ParseFiles("templates/upload.html", "templates/_base.html"))
+
+		data := getSessionData(r)
+		data.Title = "File Upload"
+		data.Greeting = "Upload new File for Sharing"
+
+		tmpl["upload.html"].ExecuteTemplate(w, "base", data)
+	}))
+
+	router.HandleFunc("POST /upload", Authorize(func(w http.ResponseWriter, r *http.Request) {
+		tmpl["upload.html"] = template.Must(template.ParseFiles("templates/upload.html", "templates/_base.html"))
+		data := getSessionData(r)
+
+		r.ParseMultipartForm(10 << 20)  // TODO: Check if this works with large files
+
+		file, handler, err := r.FormFile("file_upload")
+		if err != nil {
+			errorMessage := fmt.Sprintf("error reading upload file: %s\n", err.Error())
+			log.Printf(errorMessage)
+			data.ErrorMessage = errorMessage
+			tmpl["upload.html"].ExecuteTemplate(w, "base", data)
+			return
+		}
+		defer file.Close()
+
+		filename	  := handler.Filename
+		fileExtension := filepath.Ext(filename)
+		filesize      := handler.Size
+		fileheader	  := handler.Header
+
+		data.ResponseMessage = fmt.Sprintf("Uploaded file: %v, size: %v of type %v", filename, fileheader, filesize)
+
+		tempFile, err := os.CreateTemp(GFSConfig.UploadDirectory, fmt.Sprintf("upload-*%v", fileExtension))
+		if err != nil {
+			log.Printf(err.Error())
+		}
+		defer tempFile.Close()
+
+		fileBytes, err := io.ReadAll(file)
+		if err != nil {
+			log.Printf(err.Error())
+		}
+
+		tempFile.Write(fileBytes)
+		tmpl["upload.html"].ExecuteTemplate(w, "base", data)
 	}))
 
 	router.HandleFunc("GET /", func(w http.ResponseWriter, r *http.Request) {

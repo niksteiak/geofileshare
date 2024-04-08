@@ -20,3 +20,6 @@ go.work
 # Configuration files
 *.ini
 config.json
+
+# Uploads directory
+uploads/*

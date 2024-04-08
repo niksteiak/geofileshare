@@ -1,0 +1,45 @@
+{{define "title_content"}}
+    {{ .Title }}
+{{end}}
+
+{{define "main_content"}}
+<h2>{{ .Greeting }}</h2>
+
+<form enctype="multipart/form-data" method="post" action="/upload">
+    <div class="container-md">
+<div class="card card-info">
+    <div class="card-header">
+        Select File to Upload
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-7">
+                <input type="file" name="file_upload" class="form-control" />
+            </div>
+            <div class="col-md-5">
+                <button type="submit" class="btn btn-primary">Upload</button>
+            </div>
+        </div>
+    </div>
+    <div class="card-footer">
+        {{ if .ResponseMessage }}
+        <div>
+            {{ .ResponseMessage }}
+        </div>
+        {{end}}
+        {{ if .ErrorMessage }}
+        <div>
+            {{ .ErrorMessage }}
+        </div>
+        {{end}}
+
+    </div>
+</div>
+<div>
+    <p>
+        <a href="/">Return Home</a>
+    </p>
+</div>
+    </div>
+</form>
+{{end}}

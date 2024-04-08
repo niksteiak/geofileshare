@@ -8,6 +8,7 @@ type PageData struct {
     User         User
     UserAuthenticated bool
     ErrorMessage string
+    ResponseMessage string
 }
 
 type User struct {
@@ -41,4 +42,5 @@ type Config struct {
         TokenURI string `json:"TokenURI"`
     } `json:"AuthInfo"`
     SessionKey string `json:"SessionKey"`
+    UploadDirectory string `json:"UploadDirectory"`
 }
