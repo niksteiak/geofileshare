@@ -4,6 +4,7 @@
 *.dll
 *.so
 *.dylib
+geofileshare
 
 # Test binary, built with `go test -c`
 *.test
@@ -23,3 +24,7 @@ config.json
 
 # Uploads directory
 uploads/*
+
+# VSCODE
+.vscode
+launch.json
