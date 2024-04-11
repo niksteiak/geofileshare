@@ -96,6 +96,23 @@ func main() {
 		tmpl["upload.html"].ExecuteTemplate(w, "base", data)
 	}))
 
+	router.HandleFunc("GET /files", Authorize(func(w http.ResponseWriter, r *http.Request) {
+		tmpl["files.html"] = template.Must(template.ParseFiles("templates/files.html", "templates/_base.html"))
+		data := getSessionData(r)
+		data.Title = "Files Uploaded"
+
+		files, err := UploadedFiles()
+		if err != nil {
+			errorMessage := fmt.Sprintf("Error reading upload file: %s\n", err.Error())
+			data.ErrorMessage = errorMessage
+			tmpl["files.html"].ExecuteTemplate(w, "base", data)
+			return
+		}
+
+		data.Files = files
+		tmpl["files.html"].ExecuteTemplate(w, "base", data)
+	}))
+
 	router.HandleFunc("GET /", func(w http.ResponseWriter, r *http.Request) {
 		data := getSessionData(r)
 		data.Title ="Welcome to Geofileshare"

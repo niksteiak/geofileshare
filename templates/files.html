@@ -1,0 +1,47 @@
+{{define "title_content"}}
+    {{ .Title }}
+{{end}}
+
+{{define "main_content"}}
+<h2>{{ .Greeting }}</h2>
+<div>
+    <a href="/upload" class="btn btn-success">
+        Upload File
+    </a>
+</div>
+<div>
+    <table class="table">
+        <tr>
+            <th>Id</th>
+            <th>Original Filename</th>
+            <th>Stored Filename</th>
+            <th>Uploaded By</th>
+            <th>Uploaded On</th>
+            <th>Available</th>
+            <th>Times Requested</th>
+        </tr>
+        {{range .Files}}
+        <tr>
+            <td>{{.Id}}</td>
+            <td>{{.OriginalFilename}}</td>
+            <td>{{.StoredFilename}}</td>
+            <td>{{.UploadedBy}}</td>
+            <td>{{.UploadedOn.Format "02/01/2006 15:04:05" }}</td>
+            <td>
+                {{if .Available}}
+                Yes
+                {{else}}
+                No
+                {{end}}
+            </td>
+            <td>{{.TimesRequested}}</td>
+        </tr>
+        {{ end }}
+    </table>
+</div>
+<div>
+    <p>
+        <a href="/">Return Home</a>
+    </p>
+</div>
+{{end}}

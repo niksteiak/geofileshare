@@ -85,3 +85,36 @@ func AddUploadRecord(uploadInfo FileUploadInfo, byUser User) (int64, error) {
 	uploadId, err := result.LastInsertId()
 	return uploadId, err
 }
+
+func UploadedFiles() ([]UploadedFile, error) {
+	connectionString := ReadConnectionInfo()
+
+	var retFiles []UploadedFile
+
+
+	db, err := sql.Open("mysql", connectionString)
+	if err != nil {
+		return retFiles, err
+	}
+
+	rows, err := db.Query("SELECT F.id, F.original_filename, F.stored_filename, U.id, CONCAT(U.first_name, ' ', U.last_name) as Fullname, "+
+		"F.added_on, F.available, F.times_requested  "+
+		"FROM files F INNER JOIN user U on U.id = F.added_by_id")
+	if err != nil {
+		return retFiles, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var f UploadedFile
+		err := rows.Scan(&f.Id, &f.OriginalFilename, &f.StoredFilename, &f.UploadedById, &f.UploadedBy, &f.UploadedOn, &f.Available, &f.TimesRequested)
+		if err != nil {
+			log.Fatal(err.Error())
+			return retFiles, err
+		}
+
+		retFiles = append(retFiles, f)
+	}
+
+	return retFiles, nil
+}

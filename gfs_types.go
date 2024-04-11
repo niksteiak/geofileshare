@@ -1,5 +1,8 @@
 package main
-import "fmt"
+import (
+    "fmt"
+    "time"
+)
 
 type PageData struct {
     Title        string
@@ -10,6 +13,7 @@ type PageData struct {
     UserAuthenticated bool
     ErrorMessage string
     ResponseMessage string
+    Files        []UploadedFile
 }
 
 type User struct {
@@ -53,4 +57,15 @@ type Config struct {
 type FileUploadInfo struct {
     OriginalFilename    string
     StoredFilename      string
+}
+
+type UploadedFile struct {
+    Id          int
+    OriginalFilename    string
+    StoredFilename      string
+    UploadedBy          string
+    UploadedById        int
+    UploadedOn          time.Time
+    Available           bool
+    TimesRequested      int
 }
