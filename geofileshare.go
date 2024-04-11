@@ -9,6 +9,7 @@ import (
 	"os"
 	"io"
 	"path/filepath"
+	"time"
 
 	_ "github.com/go-sql-driver/mysql"
 
@@ -70,38 +71,28 @@ func main() {
 	router.HandleFunc("POST /upload", Authorize(func(w http.ResponseWriter, r *http.Request) {
 		tmpl["upload.html"] = template.Must(template.ParseFiles("templates/upload.html", "templates/_base.html"))
 		data := getSessionData(r)
+		data.Title = "File Upload"
 
-		r.ParseMultipartForm(10 << 20)  // TODO: Check if this works with large files
-
-		file, handler, err := r.FormFile("file_upload")
+		fileInfo, err := uploadFile(r)
 		if err != nil {
-			errorMessage := fmt.Sprintf("error reading upload file: %s\n", err.Error())
-			log.Printf(errorMessage)
+			errorMessage := fmt.Sprintf("Error reading upload file: %s\n", err.Error())
 			data.ErrorMessage = errorMessage
 			tmpl["upload.html"].ExecuteTemplate(w, "base", data)
 			return
 		}
-		defer file.Close()
 
-		filename	  := handler.Filename
-		fileExtension := filepath.Ext(filename)
-		filesize      := handler.Size
-		fileheader	  := handler.Header
-
-		data.ResponseMessage = fmt.Sprintf("Uploaded file: %v, size: %v of type %v", filename, fileheader, filesize)
-
-		tempFile, err := os.CreateTemp(GFSConfig.UploadDirectory, fmt.Sprintf("upload-*%v", fileExtension))
+		// Save the database record
+		_, err = AddUploadRecord(fileInfo, data.User)
 		if err != nil {
-			log.Printf(err.Error())
-		}
-		defer tempFile.Close()
-
-		fileBytes, err := io.ReadAll(file)
-		if err != nil {
-			log.Printf(err.Error())
+			errorMessage := fmt.Sprintf("Error saving upload file record: %s\n", err.Error())
+			data.ErrorMessage = errorMessage
+			tmpl["upload.html"].ExecuteTemplate(w, "base", data)
+			return
 		}
 
-		tempFile.Write(fileBytes)
+		data.Greeting = "File uploaded.Select new file for Sharing..."
+
+		data.ResponseMessage = fmt.Sprintf("Uploaded file: %v as %v", fileInfo.OriginalFilename, fileInfo.StoredFilename)
 		tmpl["upload.html"].ExecuteTemplate(w, "base", data)
 	}))
 
@@ -116,6 +107,40 @@ func main() {
 
 
 	http.ListenAndServe(":85", router)
+}
+
+func uploadFile(r *http.Request) (FileUploadInfo, error) {
+	r.ParseMultipartForm(10 << 20)  // TODO: Check if this works with large files
+
+	var uploadInfo = FileUploadInfo{}
+
+	file, handler, err := r.FormFile("file_upload")
+	if err != nil {
+		return uploadInfo, err
+	}
+	defer file.Close()
+
+	filename	  := handler.Filename
+	fileExtension := filepath.Ext(filename)
+	prefix		  := time.Now().Format("20060102150405")
+
+	uploadInfo.OriginalFilename = filename
+
+	tempFile, err := os.CreateTemp(GFSConfig.UploadDirectory, fmt.Sprintf("gfs_%v_*%v", prefix, fileExtension))
+	if err != nil {
+		return uploadInfo, err
+	}
+	defer tempFile.Close()
+
+	fileBytes, err := io.ReadAll(file)
+	if err != nil {
+		return uploadInfo, err
+	}
+
+	tempFile.Write(fileBytes)
+
+	uploadInfo.StoredFilename = filepath.Base(tempFile.Name())
+	return uploadInfo, nil
 }
 
 func getSessionData(r *http.Request) PageData {

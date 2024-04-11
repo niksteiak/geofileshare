@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
+	"time"
 
 	_ "github.com/go-sql-driver/mysql"
 )
@@ -65,4 +66,22 @@ func GetUser(email string) (User, error) {
 	}
 
 	return user, nil
+}
+
+func AddUploadRecord(uploadInfo FileUploadInfo, byUser User) (int64, error) {
+	connectionString := ReadConnectionInfo()
+
+	db, err := sql.Open("mysql", connectionString)
+	if err != nil {
+		return -1, err
+	}
+
+	result, err := db.Exec("INSERT INTO files (added_on, added_by_id, stored_filename, original_filename) VALUES (?, ?, ?, ?)",
+			time.Now(), byUser.Id, uploadInfo.StoredFilename, uploadInfo.OriginalFilename)
+	if err != nil {
+		return -1, err
+	}
+
+	uploadId, err := result.LastInsertId()
+	return uploadId, err
 }

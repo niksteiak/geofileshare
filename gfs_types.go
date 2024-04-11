@@ -1,4 +1,5 @@
 package main
+import "fmt"
 
 type PageData struct {
     Title        string
@@ -18,6 +19,10 @@ type User struct {
     Active      bool
     FirstName   string
     LastName    string
+}
+
+func (u *User) FullName() string {
+    return fmt.Sprintf("%v %v", u.FirstName, u.LastName)
 }
 
 type GoogleUserAuth struct {
@@ -43,4 +48,9 @@ type Config struct {
     } `json:"AuthInfo"`
     SessionKey string `json:"SessionKey"`
     UploadDirectory string `json:"UploadDirectory"`
+}
+
+type FileUploadInfo struct {
+    OriginalFilename    string
+    StoredFilename      string
 }
