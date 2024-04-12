@@ -10,9 +10,10 @@ import (
 )
 
 func ReadConnectionInfo() string {
-	connectionString := fmt.Sprintf("%v:%v@(%v:3306)/%v?parseTime=true",
+	connectionString := fmt.Sprintf("%v:%v@(%v:3306)/%v?parseTime=true&loc=%v",
 		GFSConfig.Database.Username, GFSConfig.Database.Password,
-		GFSConfig.Database.Server, GFSConfig.Database.Database)
+		GFSConfig.Database.Server, GFSConfig.Database.Database,
+		GFSConfig.Database.TimeZone)
 	return connectionString
 }
 

@@ -3,7 +3,8 @@
         "Server":   "",
         "Database": "",
         "Username": "",
-        "Password": ""
+        "Password": "",
+        "TimeZone": ""
     },
     "AuthInfo": {
         "ClientId": "",

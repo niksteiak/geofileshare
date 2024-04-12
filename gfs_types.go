@@ -39,16 +39,17 @@ type GoogleUserAuth struct {
 
 type Config struct {
     Database struct {
-        Server string `json:"Server"`
+        Server   string `json:"Server"`
         Database string `json:"Database"`
         Username string `json:"Username"`
         Password string `json:"Password"`
+        TimeZone string `json:"TimeZone"`
     } `json:"Database"`
     AuthInfo struct {
-        ClientId string `json:"ClientId"`
+        ClientId     string `json:"ClientId"`
         ClientSecret string `json:"ClientSecret"`
-        AuthURI string `json:"AuthURI"`
-        TokenURI string `json:"TokenURI"`
+        AuthURI      string `json:"AuthURI"`
+        TokenURI     string `json:"TokenURI"`
     } `json:"AuthInfo"`
     SessionKey string `json:"SessionKey"`
     UploadDirectory string `json:"UploadDirectory"`
