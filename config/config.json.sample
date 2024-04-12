@@ -13,5 +13,6 @@
         "TokenURI": "https://oauth2.googleapis.com/token"
     },
     "SessionKey": "",
-    "UploadDirectory": "uploads"
+    "UploadDirectory": "uploads",
+    "Protocol": "http"
 }

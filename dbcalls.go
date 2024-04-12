@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"time"
+	"errors"
 
 	_ "github.com/go-sql-driver/mysql"
 )
@@ -92,7 +93,6 @@ func UploadedFiles() ([]UploadedFile, error) {
 
 	var retFiles []UploadedFile
 
-
 	db, err := sql.Open("mysql", connectionString)
 	if err != nil {
 		return retFiles, err
@@ -118,4 +118,59 @@ func UploadedFiles() ([]UploadedFile, error) {
 	}
 
 	return retFiles, nil
+}
+
+func GetFileRecord(id int, descriptor string) (UploadedFile, error) {
+	var fileInfo UploadedFile
+
+	connectionString := ReadConnectionInfo()
+	db, err := sql.Open("mysql", connectionString)
+	if err != nil {
+		return fileInfo, err
+	}
+
+	query := "SELECT F.id, F.original_filename, F.stored_filename, U.id, CONCAT(U.first_name, ' ', U.last_name) as Fullname, "+
+		"F.added_on, F.available, F.times_requested  "+
+		"FROM files F INNER JOIN user U on U.id = F.added_by_id "+
+		"WHERE F.id = ?"
+
+	err = db.QueryRow(query, id).Scan(&fileInfo.Id, &fileInfo.OriginalFilename,
+		&fileInfo.StoredFilename, &fileInfo.UploadedById, &fileInfo.UploadedBy,
+		&fileInfo.UploadedOn, &fileInfo.Available, &fileInfo.TimesRequested)
+	if err != nil {
+		return fileInfo, err
+	}
+
+	// Check the descriptor
+	if !fileInfo.HasDescriptor(descriptor) {
+		return fileInfo, errors.New("Requested file attributes are not valid, or file not found")
+	}
+
+	return fileInfo, nil
+}
+
+func UpdateFileRequestedCount(id int) error {
+	connectionString := ReadConnectionInfo()
+	db, err := sql.Open("mysql", connectionString)
+	if err != nil {
+		return err
+	}
+
+	query := "SELECT F.id, F.original_filename, F.stored_filename, "+
+		"F.added_on, F.available, F.times_requested  "+
+		"FROM files F WHERE F.id = ?"
+
+	var fileInfo UploadedFile
+	err = db.QueryRow(query, id).Scan(&fileInfo.Id, &fileInfo.OriginalFilename,
+		&fileInfo.StoredFilename,
+		&fileInfo.UploadedOn, &fileInfo.Available, &fileInfo.TimesRequested)
+	if err != nil {
+		return err
+	}
+
+	updatedCount := fileInfo.TimesRequested + 1
+
+	query = "UPDATE files SET times_requested = ? WHERE id = ?"
+	_, err = db.Exec(query, updatedCount, fileInfo.Id)
+	return err
 }

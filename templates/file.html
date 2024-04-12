@@ -1,0 +1,24 @@
+{{define "title_content"}}
+    {{ .Title }}
+{{end}}
+{{define "main_content"}}
+<h2>{{ .Greeting }}</h2>
+<div class="card card-info">
+    <div class="card-header">
+        <strong>Geosysta File Share</strong>
+    </div>
+    <div class="card-body">
+        {{ if .ErrorMessage }}
+        <p>
+        {{.ErrorMessage}}
+        </p>
+        {{ end }}
+    </div>
+    <div class="card-footer">
+    {{ if .UserAuthenticated }}
+        <a href="/">Return Home</a>
+    {{end}}
+    </div>
+</div>
+
+{{end}}

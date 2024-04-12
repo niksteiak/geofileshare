@@ -2,6 +2,8 @@ package main
 import (
     "fmt"
     "time"
+    "path/filepath"
+    "strings"
 )
 
 type PageData struct {
@@ -13,7 +15,8 @@ type PageData struct {
     UserAuthenticated bool
     ErrorMessage string
     ResponseMessage string
-    Files        []UploadedFile
+    Files        *[]UploadedFile
+    DownloadBaseUrl string
 }
 
 type User struct {
@@ -53,6 +56,7 @@ type Config struct {
     } `json:"AuthInfo"`
     SessionKey string `json:"SessionKey"`
     UploadDirectory string `json:"UploadDirectory"`
+    Protocol string `json:"Protocol"`
 }
 
 type FileUploadInfo struct {
@@ -69,4 +73,21 @@ type UploadedFile struct {
     UploadedOn          time.Time
     Available           bool
     TimesRequested      int
+}
+
+func (f *UploadedFile) GetDescriptor() string {
+    filename := f.StoredFilename
+    fileExtension := filepath.Ext(filename)
+
+    filename      = strings.Replace(filename, fileExtension, "", -1)
+    filenameAttrs := strings.Split(filename, "_")
+    fileDescriptor := filenameAttrs[len(filenameAttrs)-1]
+    return fileDescriptor
+}
+
+func (f *UploadedFile) HasDescriptor(descriptor string) bool {
+    fileDescriptor := f.GetDescriptor()
+
+    hasDescriptor := fileDescriptor == descriptor
+    return hasDescriptor
 }

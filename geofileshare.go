@@ -9,6 +9,7 @@ import (
 	"os"
 	"io"
 	"path/filepath"
+	"strconv"
 	"time"
 
 	_ "github.com/go-sql-driver/mysql"
@@ -42,7 +43,8 @@ func main() {
 
 		data := getSessionData(r)
 		data.Title ="Welcome to Geofileshare"
-		data.Greeting = fmt.Sprintf("Hello, I see you are vistiting the page on %v\n", r.URL.Path)
+		data.Greeting = fmt.Sprintf("Hello, I see you are vistiting the page on %v://%v%v\n",
+			GFSConfig.Protocol, r.Host, r.URL.Path)
 
 		tmpl["greeting.html"].ExecuteTemplate(w, "base", data)
 	})
@@ -109,9 +111,65 @@ func main() {
 			return
 		}
 
-		data.Files = files
+		data.Files = &files
 		tmpl["files.html"].ExecuteTemplate(w, "base", data)
 	}))
+
+	router.HandleFunc("GET /download/{id}/{descriptor}", func(w http.ResponseWriter, r *http.Request) {
+		tmpl["file.html"] = template.Must(template.ParseFiles("templates/file.html", "templates/_base.html"))
+		data := getSessionData(r)
+
+		id_arg		:= r.PathValue("id")
+		descriptor  := r.PathValue("descriptor")
+		id, err		:= strconv.Atoi(id_arg)
+		if err != nil {
+			errorMessage := fmt.Sprintf("Error finding file: %s\n", err.Error())
+			data.ErrorMessage = errorMessage
+			tmpl["file.html"].ExecuteTemplate(w, "base", data)
+			return
+		}
+
+		fileInfo, err := GetFileRecord(id, descriptor)
+		if err != nil {
+			errorMessage := fmt.Sprintf("Error finding file: %s\n", err.Error())
+			data.ErrorMessage = errorMessage
+			tmpl["file.html"].ExecuteTemplate(w, "base", data)
+			return
+		}
+		storedFilename := filepath.Join(GFSConfig.UploadDirectory,
+			fileInfo.StoredFilename)
+
+		// Update the Times Requested Count for the file
+		err = UpdateFileRequestedCount(id)
+		if err != nil {
+			errorMessage := fmt.Sprintf("Error finding file: %s\n", err.Error())
+			data.ErrorMessage = errorMessage
+			tmpl["file.html"].ExecuteTemplate(w, "base", data)
+			return
+		}
+
+		// Serve the actual file to the client
+		downloadFile, err := os.Open(storedFilename)
+		defer downloadFile.Close()
+		if err != nil {
+			errorMessage := fmt.Sprintf("Error finding file: %s\n", err.Error())
+			data.ErrorMessage = errorMessage
+			tmpl["file.html"].ExecuteTemplate(w, "base", data)
+			return
+		}
+
+		contentBuffer := make([]byte, 512)
+		downloadFile.Read(contentBuffer)
+		fileContentType := http.DetectContentType(contentBuffer)
+		fileStat, _ := downloadFile.Stat()
+		fileSize := strconv.FormatInt(fileStat.Size(), 10)
+
+		w.Header().Set("Content-Type", fileContentType)
+        w.Header().Set("Content-Length", fileSize)
+		w.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=\"%v\"", fileInfo.OriginalFilename))
+		downloadFile.Seek(0, 0)
+		io.Copy(w, downloadFile)
+	})
 
 	router.HandleFunc("GET /", func(w http.ResponseWriter, r *http.Request) {
 		data := getSessionData(r)
@@ -172,6 +230,9 @@ func getSessionData(r *http.Request) PageData {
 	data.UserAuthenticated = true
 	data.User = loggedInUser
 	data.ErrorMessage = ""
+
+	data.DownloadBaseUrl = fmt.Sprintf("%v://%v/download",
+		GFSConfig.Protocol, r.Host)
 	return data
 }
 

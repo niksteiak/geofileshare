@@ -19,6 +19,7 @@
             <th>Uploaded On</th>
             <th>Available</th>
             <th>Times Requested</th>
+            <th>Download Address</th>
         </tr>
         {{range .Files}}
         <tr>
@@ -35,6 +36,11 @@
                 {{end}}
             </td>
             <td>{{.TimesRequested}}</td>
+            <td>
+                <a href="{{$.DownloadBaseUrl}}/{{.Id}}/{{.GetDescriptor }}">
+                    {{$.DownloadBaseUrl}}/{{.Id}}/{{.GetDescriptor }}
+                </a>
+            </td>
         </tr>
         {{ end }}
     </table>
