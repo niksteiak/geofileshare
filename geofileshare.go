@@ -174,7 +174,7 @@ func main() {
 	router.HandleFunc("GET /", func(w http.ResponseWriter, r *http.Request) {
 		data := getSessionData(r)
 		data.Title ="Welcome to Geofileshare"
-		data.Greeting = "This is home... ...page :)"
+		data.Greeting = ""
 
 		tmpl["index.html"] = template.Must(template.ParseFiles("templates/index.html", "templates/_base.html"))
 		tmpl["index.html"].ExecuteTemplate(w, "base", data)

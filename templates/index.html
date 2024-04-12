@@ -2,12 +2,13 @@
 <div>
     <strong>{{ .Greeting }}</strong>
 </div>
-OPTIONS:
+
+{{ if .UserAuthenticated }}
 <div>
-    <ol>
-        <li>
-            <a href="/greeting">Come say hello!</a>
-        </li>
-    </ol>
+    <a href="/upload" class="btn btn-success">
+        <i class="bi bi-upload"></i>&nbsp;Upload
+    </a>
 </div>
+{{ end }}
+
 {{end}}
