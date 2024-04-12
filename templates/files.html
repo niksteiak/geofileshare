@@ -14,17 +14,27 @@
         <tr>
             <th>Id</th>
             <th>Original Filename</th>
+            <th>Download Address</th>
             <th>Stored Filename</th>
             <th>Uploaded By</th>
             <th>Uploaded On</th>
             <th>Available</th>
             <th>Times Requested</th>
-            <th>Download Address</th>
         </tr>
         {{range .Files}}
         <tr>
             <td>{{.Id}}</td>
             <td>{{.OriginalFilename}}</td>
+            <td>
+                <a href="{{$.DownloadBaseUrl}}/{{.Id}}/{{.GetDescriptor }}">
+                    {{$.DownloadBaseUrl}}/{{.Id}}/{{.GetDescriptor }}
+                </a>
+                &nbsp;
+                <button type="button" class="btn btn-success float-end" title="Copy to Clipboard"
+                    onclick="navigator.clipboard.writeText('{{$.DownloadBaseUrl}}/{{.Id}}/{{.GetDescriptor }}');">
+                    <i class="bi bi-clipboard"></i>
+                </button>
+            </td>
             <td>{{.StoredFilename}}</td>
             <td>{{.UploadedBy}}</td>
             <td>{{.UploadedOn.Format "02/01/2006 15:04:05" }}</td>
@@ -36,11 +46,6 @@
                 {{end}}
             </td>
             <td>{{.TimesRequested}}</td>
-            <td>
-                <a href="{{$.DownloadBaseUrl}}/{{.Id}}/{{.GetDescriptor }}">
-                    {{$.DownloadBaseUrl}}/{{.Id}}/{{.GetDescriptor }}
-                </a>
-            </td>
         </tr>
         {{ end }}
     </table>
