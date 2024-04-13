@@ -51,6 +51,12 @@ func uploadFile(r *http.Request) (FileUploadInfo, error) {
 	return uploadInfo, nil
 }
 
+func deleteFile(filename string) error {
+	storedFilename := filepath.Join(GFSConfig.UploadDirectory, filename)
+	err := os.Remove(storedFilename)
+	return err
+}
+
 func fileTypeAllowed(fileExtension string) bool {
 	typeAllowed := false
 	allowedFileTypes := strings.Split(GFSConfig.AllowedFileTypes, ",")

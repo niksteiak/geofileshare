@@ -1,0 +1,53 @@
+{{define "title_content"}}
+    {{ .Title }}
+{{end}}
+
+{{define "main_content"}}
+<h2>{{ .Greeting }}</h2>
+
+<form method="post">
+<div class="card card-warning">
+    <div class="card-header">
+        <strong>File Information</strong>
+    </div>
+    <table class="table">
+        <tr>
+            <th class="col-md-2">Filename</th>
+            <td>{{(index .Files 0).OriginalFilename}}</td>
+        </tr>
+        <tr>
+            <th>Size</th>
+            <td>{{(index .Files 0).FormattedSize}}</td>
+        </tr>
+        <tr>
+            <th>
+                Uploaded On
+            </th>
+            <td>{{(index .Files 0).UploadedOn.Format "02/01/2006 15:04:05" }}</td>
+        </tr>
+        <tr>
+            <th>
+                Uploaded By
+            </th>
+            <td>{{(index .Files 0).UploadedBy}}</td>
+        </tr>
+        <tr>
+            <th>
+                Downloaded
+            </th>
+            <td>{{(index .Files 0).TimesRequested}} time(s)</td>
+        </tr>
+        <tr>
+            <th>
+                Last Downloaded
+            </th>
+            <td>{{(index .Files 0).LastRequested.Format "02/01/2006 15:04:05" }}</td>
+        </tr>
+    </table>
+    <div class="card-footer">
+        <button type="submit" class="btn btn-danger">Delete</button>&nbsp;
+        <a href="/files">Cancel</a>
+    </div>
+</div>
+</form>
+{{end}}

@@ -173,6 +173,79 @@ func main() {
 		io.Copy(w, downloadFile)
 	})
 
+	router.HandleFunc("GET /delete/{id}/{descriptor}", Authorize(func(w http.ResponseWriter, r *http.Request) {
+		tmpl["delete.html"] = template.Must(template.ParseFiles("templates/delete.html", "templates/_base.html"))
+		data := getSessionData(r)
+
+		id_arg		:= r.PathValue("id")
+		descriptor  := r.PathValue("descriptor")
+		id, err		:= strconv.Atoi(id_arg)
+		if err != nil {
+			errorMessage := fmt.Sprintf("Error finding file: %s\n", err.Error())
+			data.ErrorMessage = errorMessage
+			tmpl["delete.html"].ExecuteTemplate(w, "base", data)
+			return
+		}
+
+		data.Title = "Delete File"
+		data.Greeting = "Are you sure you want to delete this file?"
+
+		fileInfo, err := GetFileRecord(id, descriptor)
+		if err != nil {
+			errorMessage := fmt.Sprintf("Error finding file: %s\n", err.Error())
+			data.ErrorMessage = errorMessage
+			tmpl["delete.html"].ExecuteTemplate(w, "base", data)
+			return
+		}
+
+		data.Files = &[]UploadedFile { fileInfo }
+		tmpl["delete.html"].ExecuteTemplate(w, "base", data)
+
+	}))
+
+	router.HandleFunc("POST /delete/{id}/{descriptor}", Authorize(func(w http.ResponseWriter, r *http.Request) {
+		tmpl["delete.html"] = template.Must(template.ParseFiles("templates/delete.html", "templates/_base.html"))
+		data := getSessionData(r)
+
+		id_arg		:= r.PathValue("id")
+		descriptor  := r.PathValue("descriptor")
+		id, err		:= strconv.Atoi(id_arg)
+		if err != nil {
+			errorMessage := fmt.Sprintf("Error finding file: %s\n", err.Error())
+			data.ErrorMessage = errorMessage
+			tmpl["delete.html"].ExecuteTemplate(w, "base", data)
+			return
+		}
+
+		data.Title = "Delete File"
+
+		fileInfo, err := GetFileRecord(id, descriptor)
+		if err != nil {
+			errorMessage := fmt.Sprintf("Error finding file: %s\n", err.Error())
+			data.ErrorMessage = errorMessage
+			tmpl["delete.html"].ExecuteTemplate(w, "base", data)
+			return
+		}
+
+		err = deleteFile(fileInfo.StoredFilename)
+		if err != nil {
+			errorMessage := fmt.Sprintf("Error deleting file: %s\n", err.Error())
+			data.ErrorMessage = errorMessage
+			tmpl["delete.html"].ExecuteTemplate(w, "base", data)
+			return
+		}
+
+		err = DeleteFileRecord(id)
+		if err != nil {
+			errorMessage := fmt.Sprintf("Error deleting file record: %s\n", err.Error())
+			data.ErrorMessage = errorMessage
+			tmpl["delete.html"].ExecuteTemplate(w, "base", data)
+			return
+		}
+
+		http.Redirect(w, r, "/files", http.StatusSeeOther)
+	}))
+
 	router.HandleFunc("GET /", func(w http.ResponseWriter, r *http.Request) {
 		data := getSessionData(r)
 		data.Title ="Welcome to Geofileshare"

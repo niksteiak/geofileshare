@@ -131,13 +131,14 @@ func GetFileRecord(id int, descriptor string) (UploadedFile, error) {
 	}
 
 	query := "SELECT F.id, F.original_filename, F.stored_filename, U.id, CONCAT(U.first_name, ' ', U.last_name) as Fullname, "+
-		"F.added_on, F.available, F.times_requested  "+
+		"F.added_on, F.available, F.times_requested, F.last_requested, F.file_size  "+
 		"FROM files F INNER JOIN user U on U.id = F.added_by_id "+
 		"WHERE F.id = ?"
 
 	err = db.QueryRow(query, id).Scan(&fileInfo.Id, &fileInfo.OriginalFilename,
 		&fileInfo.StoredFilename, &fileInfo.UploadedById, &fileInfo.UploadedBy,
-		&fileInfo.UploadedOn, &fileInfo.Available, &fileInfo.TimesRequested)
+		&fileInfo.UploadedOn, &fileInfo.Available, &fileInfo.TimesRequested,
+		&fileInfo.LastRequested, &fileInfo.FileSize)
 	if err != nil {
 		return fileInfo, err
 	}
@@ -173,5 +174,16 @@ func UpdateFileRequestedCount(id int) error {
 
 	query = "UPDATE files SET times_requested = ?, last_requested = ? WHERE id = ?"
 	_, err = db.Exec(query, updatedCount, time.Now(), fileInfo.Id)
+	return err
+}
+
+func DeleteFileRecord(id int) error {
+	connectionString := ReadConnectionInfo()
+	db, err := sql.Open("mysql", connectionString)
+	if err != nil {
+		return err
+	}
+
+	_, err = db.Exec("DELETE FROM files WHERE id = ?", id)
 	return err
 }

@@ -20,6 +20,7 @@
             <th>Uploaded On</th>
             <th>Times Requested</th>
             <th>Last Requested</th>
+            <th></th>
         </tr>
         {{range .Files}}
         <tr>
@@ -40,6 +41,11 @@
             <td>{{.UploadedOn.Format "02/01/2006 15:04:05" }}</td>
             <td>{{.TimesRequested}}</td>
             <td>{{.LastRequested.Format "02/01/2006 15:04:05" }}</td>
+            <td>
+                <a href="/delete/{{.Id}}/{{.GetDescriptor }}" class="btn btn-danger" title="Delete File">
+                    <i class="bi bi-file-x"></i>
+                </a>
+            </td>
         </tr>
         {{ end }}
     </table>
