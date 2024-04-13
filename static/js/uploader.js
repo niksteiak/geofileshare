@@ -23,9 +23,14 @@ function progressHandler(event) {
 }
 
 function completeHandler(event) {
-  _("status").innerHTML = event.target.responseText;
   _("progressBar").value = 0;
+
+  var result = JSON.parse(event.target.response);
+  if(result.Status == "ERROR") {
+    _("status").innerHTML = result.Message;
+  } else {
     window.location = "/files";
+  }
 }
 
 function errorHandler(event) {

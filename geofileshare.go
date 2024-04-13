@@ -71,31 +71,33 @@ func main() {
 	}))
 
 	router.HandleFunc("POST /upload", Authorize(func(w http.ResponseWriter, r *http.Request) {
-		tmpl["upload.html"] = template.Must(template.ParseFiles("templates/upload.html", "templates/_base.html"))
+		// This will return a json response to indicate to the asychronous uploader whether
+		// the upload succeeded or failed and an error message if required
+		var response AjaxResponse
 		data := getSessionData(r)
-		data.Title = "File Upload"
 
 		fileInfo, err := uploadFile(r)
 		if err != nil {
-			errorMessage := fmt.Sprintf("Error reading upload file: %s\n", err.Error())
-			data.ErrorMessage = errorMessage
-			tmpl["upload.html"].ExecuteTemplate(w, "base", data)
+			response.Status  = "ERROR"
+			response.Message = fmt.Sprintf("Upload Error: %s", err.Error())
+
+			json.NewEncoder(w).Encode(response)
 			return
 		}
 
 		// Save the database record
 		_, err = AddUploadRecord(fileInfo, data.User)
 		if err != nil {
-			errorMessage := fmt.Sprintf("Error saving upload file record: %s\n", err.Error())
-			data.ErrorMessage = errorMessage
-			tmpl["upload.html"].ExecuteTemplate(w, "base", data)
+			response.Status  = "ERROR"
+			response.Message = fmt.Sprintf("Error saving upload file record: %s", err.Error())
+
+			json.NewEncoder(w).Encode(response)
 			return
 		}
 
-		data.Greeting = "File uploaded.Select new file for Sharing..."
-
-		data.ResponseMessage = fmt.Sprintf("Uploaded file: %v as %v", fileInfo.OriginalFilename, fileInfo.StoredFilename)
-		tmpl["upload.html"].ExecuteTemplate(w, "base", data)
+		response.Status = "OK"
+		response.Message = fmt.Sprintf("Uploaded file: %v as %v", fileInfo.OriginalFilename, fileInfo.StoredFilename)
+		json.NewEncoder(w).Encode(response)
 	}))
 
 	router.HandleFunc("GET /files", Authorize(func(w http.ResponseWriter, r *http.Request) {

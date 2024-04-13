@@ -91,3 +91,8 @@ func (f *UploadedFile) HasDescriptor(descriptor string) bool {
     hasDescriptor := fileDescriptor == descriptor
     return hasDescriptor
 }
+
+type AjaxResponse struct {
+    Status      string
+    Message     string
+}
