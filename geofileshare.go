@@ -11,6 +11,8 @@ import (
 	"path/filepath"
 	"strconv"
 	"time"
+	"strings"
+	"errors"
 
 	_ "github.com/go-sql-driver/mysql"
 
@@ -66,6 +68,7 @@ func main() {
 		data := getSessionData(r)
 		data.Title = "File Upload"
 		data.Greeting = "Upload new File for Sharing"
+		data.AllowedFileTypes = GFSConfig.AllowedFileTypes
 
 		tmpl["upload.html"].ExecuteTemplate(w, "base", data)
 	}))
@@ -199,8 +202,12 @@ func uploadFile(r *http.Request) (FileUploadInfo, error) {
 
 	filename	  := handler.Filename
 	fileExtension := filepath.Ext(filename)
-	prefix		  := time.Now().Format("20060102150405")
+	if !FileTypeAllowed(fileExtension) {
+		errorMessage := fmt.Sprintf("File type not allowed. Only %v file types allowed.", GFSConfig.AllowedFileTypes)
+		return uploadInfo, errors.New(errorMessage)
+	}
 
+	prefix		  := time.Now().Format("20060102150405")
 	uploadInfo.OriginalFilename = filename
 
 	tempFile, err := os.CreateTemp(GFSConfig.UploadDirectory, fmt.Sprintf("gfs_%v_*%v", prefix, fileExtension))
@@ -267,3 +274,16 @@ func LoadConfiguration(file string) Config {
 	return config
 }
 
+func FileTypeAllowed(fileExtension string) bool {
+	typeAllowed := false
+	allowedFileTypes := strings.Split(GFSConfig.AllowedFileTypes, ",")
+
+	for i := range len(allowedFileTypes) {
+		if fileExtension == allowedFileTypes[i] {
+			typeAllowed = true
+			break
+		}
+	}
+
+	return typeAllowed
+}

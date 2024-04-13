@@ -14,5 +14,6 @@
     },
     "SessionKey": "",
     "UploadDirectory": "uploads",
+    "AllowedFileTypes": ".zip,.rar,.7z,.tar,.gz",
     "Protocol": "http"
 }

@@ -14,7 +14,7 @@
     <div class="card-body">
         <div class="row">
             <div class="col-md-5">
-                <input type="file" id="file_upload" name="file_upload" class="form-control" /><br/>
+                <input type="file" id="file_upload" name="file_upload" class="form-control" accept="{{.AllowedFileTypes}}" /><br/>
             </div>
             <div class="col-md-1">
                 <button type="button" class="btn btn-primary" onclick="uploadFile();" >Upload</button>

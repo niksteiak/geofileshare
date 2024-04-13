@@ -17,6 +17,7 @@ type PageData struct {
     ResponseMessage string
     Files        *[]UploadedFile
     DownloadBaseUrl string
+    AllowedFileTypes string
 }
 
 type User struct {
@@ -56,6 +57,7 @@ type Config struct {
     } `json:"AuthInfo"`
     SessionKey string `json:"SessionKey"`
     UploadDirectory string `json:"UploadDirectory"`
+    AllowedFileTypes string `json:"AllowedFileTypes"`
     Protocol string `json:"Protocol"`
 }
 
