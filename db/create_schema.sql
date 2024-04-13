@@ -26,6 +26,8 @@ CREATE TABLE files (
 	original_filename varchar(255) NOT NULL,
 	available BOOL DEFAULT 1 NOT NULL,
 	times_requested INT DEFAULT 0 NOT NULL,
+	last_requested DATETIME NOT NULL,
+	file_size INT DEFAULT 0 NOT NULL,
 	CONSTRAINT files_pk PRIMARY KEY (id),
 	CONSTRAINT files_user_FK FOREIGN KEY (added_by_id) REFERENCES `user`(id)
 )

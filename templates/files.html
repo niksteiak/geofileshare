@@ -12,19 +12,20 @@
 <div>
     <table class="table table-striped">
         <tr>
-            <th>Id</th>
-            <th>Original Filename</th>
+            <th>#</th>
+            <th>Filename</th>
+            <th>Size</th>
             <th>Download Address</th>
-            <th>Stored Filename</th>
             <th>Uploaded By</th>
             <th>Uploaded On</th>
-            <th>Available</th>
             <th>Times Requested</th>
+            <th>Last Requested</th>
         </tr>
         {{range .Files}}
         <tr>
             <td>{{.Id}}</td>
             <td>{{.OriginalFilename}}</td>
+            <td>{{.FormattedSize}}</td>
             <td>
                 <a href="{{$.DownloadBaseUrl}}/{{.Id}}/{{.GetDescriptor }}">
                     {{$.DownloadBaseUrl}}/{{.Id}}/{{.GetDescriptor }}
@@ -35,17 +36,10 @@
                     <i class="bi bi-clipboard"></i>
                 </button>
             </td>
-            <td>{{.StoredFilename}}</td>
             <td>{{.UploadedBy}}</td>
             <td>{{.UploadedOn.Format "02/01/2006 15:04:05" }}</td>
-            <td>
-                {{if .Available}}
-                Yes
-                {{else}}
-                No
-                {{end}}
-            </td>
             <td>{{.TimesRequested}}</td>
+            <td>{{.LastRequested.Format "02/01/2006 15:04:05" }}</td>
         </tr>
         {{ end }}
     </table>

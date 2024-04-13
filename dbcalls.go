@@ -78,8 +78,8 @@ func AddUploadRecord(uploadInfo FileUploadInfo, byUser User) (int64, error) {
 		return -1, err
 	}
 
-	result, err := db.Exec("INSERT INTO files (added_on, added_by_id, stored_filename, original_filename) VALUES (?, ?, ?, ?)",
-			time.Now(), byUser.Id, uploadInfo.StoredFilename, uploadInfo.OriginalFilename)
+	result, err := db.Exec("INSERT INTO files (added_on, added_by_id, stored_filename, original_filename, last_requested, file_size) VALUES (?, ?, ?, ?, ?, ?)",
+			time.Now(), byUser.Id, uploadInfo.StoredFilename, uploadInfo.OriginalFilename, time.Now(), uploadInfo.FileSize)
 	if err != nil {
 		return -1, err
 	}
@@ -99,7 +99,7 @@ func UploadedFiles() ([]UploadedFile, error) {
 	}
 
 	rows, err := db.Query("SELECT F.id, F.original_filename, F.stored_filename, U.id, CONCAT(U.first_name, ' ', U.last_name) as Fullname, "+
-		"F.added_on, F.available, F.times_requested  "+
+		"F.added_on, F.available, F.times_requested, F.last_requested, F.file_size  "+
 		"FROM files F INNER JOIN user U on U.id = F.added_by_id")
 	if err != nil {
 		return retFiles, err
@@ -108,7 +108,8 @@ func UploadedFiles() ([]UploadedFile, error) {
 
 	for rows.Next() {
 		var f UploadedFile
-		err := rows.Scan(&f.Id, &f.OriginalFilename, &f.StoredFilename, &f.UploadedById, &f.UploadedBy, &f.UploadedOn, &f.Available, &f.TimesRequested)
+		err := rows.Scan(&f.Id, &f.OriginalFilename, &f.StoredFilename, &f.UploadedById, &f.UploadedBy,
+			&f.UploadedOn, &f.Available, &f.TimesRequested, &f.LastRequested, &f.FileSize)
 		if err != nil {
 			log.Fatal(err.Error())
 			return retFiles, err
@@ -170,7 +171,7 @@ func UpdateFileRequestedCount(id int) error {
 
 	updatedCount := fileInfo.TimesRequested + 1
 
-	query = "UPDATE files SET times_requested = ? WHERE id = ?"
-	_, err = db.Exec(query, updatedCount, fileInfo.Id)
+	query = "UPDATE files SET times_requested = ?, last_requested = ? WHERE id = ?"
+	_, err = db.Exec(query, updatedCount, time.Now(), fileInfo.Id)
 	return err
 }

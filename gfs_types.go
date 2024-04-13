@@ -1,9 +1,6 @@
 package main
 import (
     "fmt"
-    "time"
-    "path/filepath"
-    "strings"
 )
 
 type PageData struct {
@@ -59,39 +56,6 @@ type Config struct {
     UploadDirectory string `json:"UploadDirectory"`
     AllowedFileTypes string `json:"AllowedFileTypes"`
     Protocol string `json:"Protocol"`
-}
-
-type FileUploadInfo struct {
-    OriginalFilename    string
-    StoredFilename      string
-}
-
-type UploadedFile struct {
-    Id          int
-    OriginalFilename    string
-    StoredFilename      string
-    UploadedBy          string
-    UploadedById        int
-    UploadedOn          time.Time
-    Available           bool
-    TimesRequested      int
-}
-
-func (f *UploadedFile) GetDescriptor() string {
-    filename := f.StoredFilename
-    fileExtension := filepath.Ext(filename)
-
-    filename      = strings.Replace(filename, fileExtension, "", -1)
-    filenameAttrs := strings.Split(filename, "_")
-    fileDescriptor := filenameAttrs[len(filenameAttrs)-1]
-    return fileDescriptor
-}
-
-func (f *UploadedFile) HasDescriptor(descriptor string) bool {
-    fileDescriptor := f.GetDescriptor()
-
-    hasDescriptor := fileDescriptor == descriptor
-    return hasDescriptor
 }
 
 type AjaxResponse struct {
