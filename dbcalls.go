@@ -6,6 +6,7 @@ import (
 	"log"
 	"time"
 	"errors"
+	"strings"
 
 	_ "github.com/go-sql-driver/mysql"
 )
@@ -68,6 +69,57 @@ func GetUser(email string) (User, error) {
 	}
 
 	return user, nil
+}
+
+func GetUserById(userId int) (User, error) {
+	connectionString := ReadConnectionInfo()
+
+	db, err := sql.Open("mysql", connectionString)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	var user User
+	query := "SELECT id, username, email, active, first_name, last_name FROM user where id = ?"
+	err = db.QueryRow(query, userId).Scan(&user.Id, &user.Username, &user.Email, &user.Active, &user.FirstName, &user.LastName)
+	if err != nil {
+		log.Fatal(err.Error())
+		return user, err
+	}
+
+	return user, nil
+}
+
+func AddUser(email string, firstName string, lastName string) (int64, error) {
+	connectionString := ReadConnectionInfo()
+
+	db, err := sql.Open("mysql", connectionString)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	username := strings.Split(email, "@")[0]
+
+	query := "INSERT INTO user (username, email, active, first_name, last_name) VALUES (?, ?, ?, ?, ?)"
+	result, err := db.Exec(query, username, email, true, firstName, lastName)
+	if err != nil {
+		return -1, err
+	}
+
+	userId, err := result.LastInsertId()
+	return userId, err
+}
+
+func DeleteUser(userId int) error {
+	connectionString := ReadConnectionInfo()
+
+	db, err := sql.Open("mysql", connectionString)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	_, err = db.Exec("DELETE FROM user WHERE id = ?", userId)
+	return err
 }
 
 func AddUploadRecord(uploadInfo FileUploadInfo, byUser User) (int64, error) {

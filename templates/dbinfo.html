@@ -4,6 +4,7 @@
 
 {{define "main_content"}}
 <h2>{{ .Greeting }}</h2>
+<form method="post">
 <div>
     <table class="table table-striped">
         <tr>
@@ -13,6 +14,7 @@
             <th>Active</th>
             <th>First Name</th>
             <th>Last Name</th>
+            <th></th>
         </tr>
         {{range .Users}}
         <tr>
@@ -30,10 +32,23 @@
             </td>
             <td>{{.FirstName}}</td>
             <td>{{.LastName}}</td>
+            <td>
+                <a href="/deleteuser/{{.Id}}" class="btn btn-danger" title="Delete Users"><i class="bi bi-file-x"></i></a>
+            </td>
         </tr>
         {{ end }}
+        <tr>
+            <td>&nbsp;</td>
+            <td>&nbsp;</td>
+            <td><input type="text" class="form-control" name="email" placeholder="someone@example.com" /></td>
+            <td>&nbsp;</td>
+            <td><input type="text" class="form-control" name="first_name" placeholder="Someone" /></td>
+            <td><input type="text" class="form-control" name="last_name" placeholder="Else" /></td>
+            <td><button type="submit" class="btn btn-success" title="Add user"><i class="bi bi-check-lg"></i></button></td>
+        </tr>
     </table>
 </div>
+</form>
 <div>
     <p>
         <a href="/">Return Home</a>

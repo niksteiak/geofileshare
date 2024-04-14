@@ -10,6 +10,7 @@ import (
 	"io"
 	"path/filepath"
 	"strconv"
+	"net/mail"
 
 	_ "github.com/go-sql-driver/mysql"
 
@@ -57,6 +58,87 @@ func main() {
 		data.Users = ReadDatabaseUsers()
 
 		tmpl["dbinfo.html"].ExecuteTemplate(w, "base", data)
+	}))
+
+	router.HandleFunc("POST /users", Authorize(func(w http.ResponseWriter, r *http.Request) {
+		tmpl["dbinfo.html"] = template.Must(template.ParseFiles("templates/dbinfo.html", "templates/_base.html"))
+		data := getSessionData(r)
+		data.Title ="Registered Users"
+		data.Greeting = "The users that have access to Geofileshare are:"
+
+		userEmail		:= r.FormValue("email")
+		_, err := mail.ParseAddress(userEmail)
+		if err != nil {
+			data.Users = ReadDatabaseUsers()
+			data.ErrorMessage = fmt.Sprintf("Invalid email address. %v", err.Error())
+			tmpl["dbinfo.html"].ExecuteTemplate(w, "base", data)
+			return
+		}
+
+		userFirstName	:= r.FormValue("first_name")
+		userLastName	:= r.FormValue("last_name")
+		if !(ContainsOnlyLetters(userFirstName) && ContainsOnlyLetters(userLastName)) {
+			data.Users = ReadDatabaseUsers()
+			data.ErrorMessage = "User First and Last name must contain only letters"
+			tmpl["dbinfo.html"].ExecuteTemplate(w, "base", data)
+			return
+		}
+
+		_, err = AddUser(userEmail, userFirstName, userLastName)
+		if err != nil {
+			data.Users = ReadDatabaseUsers()
+			data.ErrorMessage = err.Error()
+			tmpl["dbinfo.html"].ExecuteTemplate(w, "base", data)
+			return
+		}
+
+		http.Redirect(w, r, "/users", http.StatusSeeOther)
+	}))
+
+	router.HandleFunc("GET /deleteuser/{id}", Authorize(func(w http.ResponseWriter, r *http.Request) {
+		tmpl["user.html"] = template.Must(template.ParseFiles("templates/user.html", "templates/_base.html"))
+		data := getSessionData(r)
+		data.Title ="Delete User"
+		data.Greeting = "Are you sure you want to delete this user?"
+
+		id_arg		:= r.PathValue("id")
+		userId, err		:= strconv.Atoi(id_arg)
+		if err != nil {
+			errorMessage := fmt.Sprintf("Error finding user: %s\n", err.Error())
+			data.ErrorMessage = errorMessage
+			tmpl["user.html"].ExecuteTemplate(w, "base", data)
+			return
+		}
+
+		userRecord, err := GetUserById(userId)
+		data.Users = []User{userRecord}
+
+		tmpl["user.html"].ExecuteTemplate(w, "base", data)
+	}))
+
+	router.HandleFunc("POST /deleteuser/{id}", Authorize(func(w http.ResponseWriter, r *http.Request) {
+		tmpl["user.html"] = template.Must(template.ParseFiles("templates/user.html", "templates/_base.html"))
+		data := getSessionData(r)
+		data.Title ="Delete User"
+		data.Greeting = "Are you sure you want to delete this user?"
+
+		id_arg		:= r.PathValue("id")
+		userId, err		:= strconv.Atoi(id_arg)
+		if err != nil {
+			errorMessage := fmt.Sprintf("Error finding user: %s\n", err.Error())
+			data.ErrorMessage = errorMessage
+			tmpl["user.html"].ExecuteTemplate(w, "base", data)
+			return
+		}
+
+		err = DeleteUser(userId)
+		if err != nil {
+			errorMessage := fmt.Sprintf("Error deleting user: %s\n", err.Error())
+			data.ErrorMessage = errorMessage
+			tmpl["user.html"].ExecuteTemplate(w, "base", data)
+			return
+		}
+		http.Redirect(w, r, "/users", http.StatusSeeOther)
 	}))
 
 	router.HandleFunc("GET /upload", Authorize(func(w http.ResponseWriter, r *http.Request) {
