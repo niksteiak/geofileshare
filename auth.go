@@ -18,7 +18,6 @@ import (
 )
 
 const oauthGoogleUrlAPI = "https://www.googleapis.com/oauth2/v2/userinfo?access_token="
-const GFSBaseUrl = "http://localhost:85"
 const SessionCookie = "geofilesession"
 
 var store sessions.Store
@@ -74,7 +73,7 @@ func logout(w http.ResponseWriter, r *http.Request) {
 
 func oauthGoogleLogin(w http.ResponseWriter, r *http.Request) {
 	oauthstate := generateStateOauthCookie(w, r)
-	var googleOauthConfig = getOauthConfig()
+	var googleOauthConfig = getOauthConfig(r)
 
 	u := googleOauthConfig.AuthCodeURL(oauthstate)
 	http.Redirect(w, r, u, http.StatusTemporaryRedirect)
@@ -90,7 +89,7 @@ func oauthGoogleCallback(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	data, err := getUserDataFromGoogle(r.FormValue("code"))
+	data, err := getUserDataFromGoogle(r)
 	if err != nil {
 		log.Println(err.Error())
 		http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
@@ -109,8 +108,9 @@ func oauthGoogleCallback(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
 }
 
-func getUserDataFromGoogle(code string) ([]byte, error) {
-	var googleOauthConfig = getOauthConfig()
+func getUserDataFromGoogle(r *http.Request) ([]byte, error) {
+	var googleOauthConfig = getOauthConfig(r)
+	code := r.FormValue("code")
 
 	token, err := googleOauthConfig.Exchange(context.Background(), code)
 	if err != nil {
@@ -144,9 +144,10 @@ func generateStateOauthCookie(w http.ResponseWriter, r *http.Request) string {
 	return state
 }
 
-func getOauthConfig() oauth2.Config {
+func getOauthConfig(r *http.Request) oauth2.Config {
+	redirectUrl := fmt.Sprintf("%v://%v/auth/google/callback", GFSConfig.Protocol, r.Host)
 	var oauthConfig = &oauth2.Config{
-		RedirectURL:  GFSBaseUrl + "/auth/google/callback",
+		RedirectURL:  redirectUrl,
 		ClientID:     GFSConfig.AuthInfo.ClientId,
 		ClientSecret: GFSConfig.AuthInfo.ClientSecret,
 		Scopes:       []string{"https://www.googleapis.com/auth/userinfo.email"},
