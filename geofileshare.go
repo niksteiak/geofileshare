@@ -86,13 +86,17 @@ func main() {
 		}
 
 		// Save the database record
-		_, err = AddUploadRecord(fileInfo, data.User)
+		fileInfo.RecordId, err = AddUploadRecord(fileInfo, data.User)
 		if err != nil {
 			response.Status  = "ERROR"
 			response.Message = fmt.Sprintf("Error saving upload file record: %s", err.Error())
 
 			json.NewEncoder(w).Encode(response)
 			return
+		}
+
+		if GFSConfig.SMTP.SendNotifications {
+			err = SendMail(r, fileInfo, data.User)
 		}
 
 		response.Status = "OK"
@@ -167,7 +171,7 @@ func main() {
 		fileSize := strconv.FormatInt(fileStat.Size(), 10)
 
 		w.Header().Set("Content-Type", fileContentType)
-        w.Header().Set("Content-Length", fileSize)
+		w.Header().Set("Content-Length", fileSize)
 		w.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=\"%v\"", fileInfo.OriginalFilename))
 		downloadFile.Seek(0, 0)
 		io.Copy(w, downloadFile)

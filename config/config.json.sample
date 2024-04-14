@@ -12,6 +12,17 @@
         "AuthURI": "https://accounts.google.com/o/oauth2/auth",
         "TokenURI": "https://oauth2.googleapis.com/token"
     },
+    "SMTP": {
+        "SenderAddress": "",
+        "SenderName": "",
+        "SmtpServer": "",
+        "Port": 25,
+        "UseTLS": false,
+        "UseSSL": false,
+        "Username": "",
+        "Password": "",
+        "SendNotifications": true
+    },
     "SessionKey": "",
     "UploadDirectory": "uploads",
     "AllowedFileTypes": ".zip,.rar,.7z,.tar,.gz",

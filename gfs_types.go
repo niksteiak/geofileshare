@@ -52,6 +52,17 @@ type Config struct {
         AuthURI      string `json:"AuthURI"`
         TokenURI     string `json:"TokenURI"`
     } `json:"AuthInfo"`
+    SMTP struct {
+        SenderAddress   string  `json:"SenderAddress"`
+        SenderName      string  `json:"SenderName"`
+        SmtpServer      string  `json:"SmtpServer"`
+        Port            int     `josn:"Port"`
+        UseTLS          bool    `json:"UseTLS"`
+        UseSSL          bool    `json:"UseSSL"`
+        Username        string  `json:"Username"`
+        Password        string  `json:"Password"`
+        SendNotifications   bool    `json:"SendNotifications"`
+    } `json:"SMTP"`
     SessionKey string `json:"SessionKey"`
     UploadDirectory string `json:"UploadDirectory"`
     AllowedFileTypes string `json:"AllowedFileTypes"`
