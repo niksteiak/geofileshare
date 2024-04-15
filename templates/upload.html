@@ -1,46 +1,50 @@
 {{define "title_content"}}
-    {{ .Title }}
+{{ .Title }}
 {{end}}
 
 {{define "main_content"}}
-<h2>{{ .Greeting }}</h2>
+<a href="/files" class="btn btn-primary">
+    <i class="bi bi-list-ul"></i>&nbsp;Files List
+</a>
 
 <form enctype="multipart/form-data" method="post" action="/upload">
-    <div class="container-md">
-<div class="card card-info">
-    <div class="card-header">
-        Select File to Upload
-    </div>
-    <div class="card-body">
-        <div class="row">
-            <div class="col-md-5">
-                <input type="file" id="file_upload" name="file_upload" class="form-control" accept="{{.AllowedFileTypes}}" /><br/>
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card card-info">
+                <div class="card-header">
+                    Select File to Upload
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-10">
+                            <input type="file" id="file_upload" name="file_upload" class="form-control" accept="{{.AllowedFileTypes}}" /><br/>
+                        </div>
+                        <div class="col-md-1">
+                            <button type="button" class="btn btn-primary" onclick="uploadFile();" >Upload</button>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-12">
+                            <progress id="progressBar" value="0" max="100" style="width:300px;"></progress>
+                            <h3 id="status"></h3>
+                            <p id="loaded_n_total"></p>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    {{ if .ResponseMessage }}
+                    <div>
+                        {{ .ResponseMessage }}
+                    </div>
+                    {{end}}
+                </div>
             </div>
-            <div class="col-md-1">
-                <button type="button" class="btn btn-primary" onclick="uploadFile();" >Upload</button>
+            <div>
+                <p>
+                <a href="/">Return Home</a>
+                </p>
             </div>
         </div>
-        <div class="row">
-            <div class="col-md-6">
-              <progress id="progressBar" value="0" max="100" style="width:300px;"></progress>
-              <h3 id="status"></h3>
-              <p id="loaded_n_total"></p>
-            </div>
-        </div>
-    </div>
-    <div class="card-footer">
-        {{ if .ResponseMessage }}
-        <div>
-            {{ .ResponseMessage }}
-        </div>
-        {{end}}
-    </div>
-</div>
-<div>
-    <p>
-        <a href="/">Return Home</a>
-    </p>
-</div>
     </div>
 </form>
 {{end}}

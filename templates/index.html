@@ -4,11 +4,40 @@
 </div>
 
 {{ if .UserAuthenticated }}
-<div>
-    <a href="/upload" class="btn btn-success">
-        <i class="bi bi-upload"></i>&nbsp;Upload
-    </a>
+<div class="row">
+    <div class="d-grid gap-2 col-4 mx-auto">
+        <a href="/upload" class="btn btn-lg btn-success" style="height: 100px;">
+            <i class="bi bi-upload"></i>&nbsp;Upload New File
+        </a>
+    </div>
+    <div class="d-grid gap-2 col-4 mx-auto">
+        <a href="/files" class="btn btn-lg btn-primary">
+            <i class="bi bi-list-ul"></i>&nbsp;Files List
+        </a>
+    </div>
+    <div class="d-grid gap-2 col-4 mx-auto">
+        {{ if .UserAdministrator }}
+        <a href="/users" class="btn btn-lg btn-warning">
+            <i class="bi bi-people"></i>&nbsp;Users
+        </a>
+        {{ else }}
+        &nbsp;
+        {{ end }}
+    </div>
 </div>
+{{ else }}
+<div class="row">
+    <div class="d-grid gap-2 col-4 mx-auto">
+        <a href="/login" class="btn btn-lg btn-success">
+            <i class="bi bi-door-open"></i>&nbsp;Login
+        </a>
+    </div>
+    <div class="d-grid gap-2 col-4 mx-auto">
+    </div>
+    <div class="d-grid gap-2 col-4 mx-auto">
+    </div>
+</div>
+
 {{ end }}
 
 {{end}}

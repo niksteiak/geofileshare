@@ -437,7 +437,7 @@ func getSessionData(r *http.Request) PageData {
 	data := PageData{}
 	loggedInUser, err := LoggedInUser(r)
 	if err != nil {
-		data.ErrorMessage = "User not logged in or user not found"
+		// data.ErrorMessage = "User not logged in or user not found"
 		data.UserAuthenticated = false
 		return data
 	}
