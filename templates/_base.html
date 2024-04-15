@@ -24,9 +24,11 @@
                             <a class="nav-link active" aria-current="page" href="/">Home</a>
                         </li>
                         {{ if .UserAuthenticated }}
+                        {{ if .UserAdministrator }}
                         <li class="nav-item">
                             <a class="nav-link" href="/users">Users</a>
                         </li>
+                        {{end}}
                         <li class="nav-item">
                             <a class="nav-link" href="/files">Files</a>
                         </li>

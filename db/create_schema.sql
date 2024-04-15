@@ -8,14 +8,12 @@ CREATE TABLE `user` (
 	active TINYINT DEFAULT 1 NOT NULL,
 	first_name varchar(100) NULL,
 	last_name varchar(250) NULL,
+	administrator TINYINT DEFAULT 0 NOT NULL,
 	CONSTRAINT user_pk PRIMARY KEY (id)
 )
 ENGINE=InnoDB
 DEFAULT CHARSET=utf8mb4
 COLLATE=utf8mb4_general_ci;
-
--- Insert the basic users
-INSERT INTO `user` (username, email, active, first_name, last_name) VALUES ('nikos', 'nikos@geosysta.com', 1, 'Nikos', 'Steiakakis');
 
 -- Create the Files table
 CREATE TABLE files (
@@ -34,3 +32,6 @@ CREATE TABLE files (
 ENGINE=InnoDB
 DEFAULT CHARSET=utf8mb4
 COLLATE=utf8mb4_general_ci;
+
+-- Insert the basic user
+INSERT INTO `user` (username, email, active, first_name, last_name, administrator) VALUES ('nikos', 'nikos@geosysta.com', 1, 'Nikos', 'Steiakakis', 1);

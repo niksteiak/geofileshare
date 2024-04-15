@@ -10,6 +10,7 @@ type PageData struct {
     Users        []User
     User         User
     UserAuthenticated bool
+    UserAdministrator bool
     ErrorMessage string
     ResponseMessage string
     Files        *[]UploadedFile
@@ -24,6 +25,7 @@ type User struct {
     Active      bool
     FirstName   string
     LastName    string
+    Administrator bool
 }
 
 func (u *User) FullName() string {

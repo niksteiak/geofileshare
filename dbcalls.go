@@ -33,7 +33,7 @@ func ReadDatabaseUsers() []User {
 
 	var retUsers []User
 
-	rows, err := db.Query("SELECT id, username, email, active, first_name, last_name FROM user")
+	rows, err := db.Query("SELECT id, username, email, active, first_name, last_name, administrator FROM user")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -41,7 +41,7 @@ func ReadDatabaseUsers() []User {
 
 	for rows.Next() {
 		var u User
-		err := rows.Scan(&u.Id, &u.Username, &u.Email, &u.Active, &u.FirstName, &u.LastName)
+		err := rows.Scan(&u.Id, &u.Username, &u.Email, &u.Active, &u.FirstName, &u.LastName, &u.Administrator)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -61,8 +61,9 @@ func GetUser(email string) (User, error) {
 	}
 
 	var user User
-	query := "SELECT id, username, email, active, first_name, last_name FROM user where email = ?"
-	err = db.QueryRow(query, email).Scan(&user.Id, &user.Username, &user.Email, &user.Active, &user.FirstName, &user.LastName)
+	query := "SELECT id, username, email, active, first_name, last_name, administrator FROM user where email = ?"
+	err = db.QueryRow(query, email).Scan(&user.Id, &user.Username, &user.Email,
+		&user.Active, &user.FirstName, &user.LastName, &user.Administrator)
 	if err != nil {
 		log.Fatal(err.Error())
 		return user, err
@@ -80,8 +81,9 @@ func GetUserById(userId int) (User, error) {
 	}
 
 	var user User
-	query := "SELECT id, username, email, active, first_name, last_name FROM user where id = ?"
-	err = db.QueryRow(query, userId).Scan(&user.Id, &user.Username, &user.Email, &user.Active, &user.FirstName, &user.LastName)
+	query := "SELECT id, username, email, active, first_name, last_name, administrator FROM user where id = ?"
+	err = db.QueryRow(query, userId).Scan(&user.Id, &user.Username,
+		&user.Email, &user.Active, &user.FirstName, &user.LastName, &user.Administrator)
 	if err != nil {
 		log.Fatal(err.Error())
 		return user, err
@@ -90,7 +92,7 @@ func GetUserById(userId int) (User, error) {
 	return user, nil
 }
 
-func AddUser(email string, firstName string, lastName string) (int64, error) {
+func AddUser(email string, firstName string, lastName string, administrator bool) (int64, error) {
 	connectionString := ReadConnectionInfo()
 
 	db, err := sql.Open("mysql", connectionString)
@@ -100,14 +102,28 @@ func AddUser(email string, firstName string, lastName string) (int64, error) {
 
 	username := strings.Split(email, "@")[0]
 
-	query := "INSERT INTO user (username, email, active, first_name, last_name) VALUES (?, ?, ?, ?, ?)"
-	result, err := db.Exec(query, username, email, true, firstName, lastName)
+	query := "INSERT INTO user (username, email, active, first_name, last_name, administrator) VALUES (?, ?, ?, ?, ?, ?)"
+	result, err := db.Exec(query, username, email, true, firstName, lastName, administrator)
 	if err != nil {
 		return -1, err
 	}
 
 	userId, err := result.LastInsertId()
 	return userId, err
+}
+
+func UpdateUser(userRecord User) error {
+	connectionString := ReadConnectionInfo()
+
+	db, err := sql.Open("mysql", connectionString)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	query := "UPDATE user SET first_name = ?, last_name = ?, active = ?, administrator = ? WHERE id = ?"
+	_, err = db.Exec(query, userRecord.FirstName, userRecord.LastName, userRecord.Active,
+		userRecord.Administrator, userRecord.Id)
+	return err
 }
 
 func DeleteUser(userId int) error {

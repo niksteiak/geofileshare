@@ -1,0 +1,65 @@
+{{define "title_content"}}
+    {{ .Title }}
+{{end}}
+
+{{define "main_content"}}
+<h2>{{ .Greeting }}</h2>
+
+<form method="post">
+<div class="card card-warning">
+    <div class="card-header">
+        <strong>User Information</strong>
+    </div>
+    <table class="table">
+        <tr>
+            <th class="col-md-2">Username</th>
+            <td>{{(index .Users 0).Username}}</td>
+        </tr>
+        <tr>
+            <th>e-mail</th>
+            <td>{{(index .Users 0).Email}}</td>
+        </tr>
+        <tr>
+            <th>Status</th>
+            <td>
+                {{ if(index .Users 0).Active }}
+                <input type="checkbox" name="user_active" checked="checked" />
+                {{ else }}
+                <input type="checkbox" name="user_active" />
+                {{ end }}
+                &nbsp;Active
+            </td>
+        </tr>
+        <tr>
+            <th>First Name</th>
+            <td>
+                <input type="text" class="form-control" name="first_name" value="{{(index .Users 0).FirstName}}" />
+            </td>
+        </tr>
+        <tr>
+            <th>Last Name</th>
+            <td>
+                <input type="text" class="form-control" name="last_name" value="{{(index .Users 0).LastName}}" />
+            </td>
+        </tr>
+        <tr>
+            <th>
+                Role
+            </th>
+            <td>
+                {{if (index .Users 0).Administrator }}
+                <input type="checkbox" name="administrator" checked="checked" />
+                {{else}}
+                <input type="checkbox" name="administrator" />
+                {{end}}
+                &nbsp;Administrator
+            </td>
+        </tr>
+    </table>
+    <div class="card-footer">
+        <button type="submit" class="btn btn-primary">Save</button>&nbsp;
+        <a href="/users">Cancel</a>
+    </div>
+</div>
+</form>
+{{end}}

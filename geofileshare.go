@@ -49,7 +49,7 @@ func main() {
 		tmpl["greeting.html"].ExecuteTemplate(w, "base", data)
 	})
 
-	router.HandleFunc("GET /users", Authorize(func(w http.ResponseWriter, r *http.Request) {
+	router.HandleFunc("GET /users", Authorize(true, func(w http.ResponseWriter, r *http.Request) {
 		tmpl["dbinfo.html"] = template.Must(template.ParseFiles("templates/dbinfo.html", "templates/_base.html"))
 
 		data := getSessionData(r)
@@ -60,7 +60,7 @@ func main() {
 		tmpl["dbinfo.html"].ExecuteTemplate(w, "base", data)
 	}))
 
-	router.HandleFunc("POST /users", Authorize(func(w http.ResponseWriter, r *http.Request) {
+	router.HandleFunc("POST /users", Authorize(true, func(w http.ResponseWriter, r *http.Request) {
 		tmpl["dbinfo.html"] = template.Must(template.ParseFiles("templates/dbinfo.html", "templates/_base.html"))
 		data := getSessionData(r)
 		data.Title ="Registered Users"
@@ -83,8 +83,10 @@ func main() {
 			tmpl["dbinfo.html"].ExecuteTemplate(w, "base", data)
 			return
 		}
+		isAdminValue := r.FormValue("administrator")
+		isAdmin := isAdminValue == "on"
 
-		_, err = AddUser(userEmail, userFirstName, userLastName)
+		_, err = AddUser(userEmail, userFirstName, userLastName, isAdmin)
 		if err != nil {
 			data.Users = ReadDatabaseUsers()
 			data.ErrorMessage = err.Error()
@@ -95,7 +97,7 @@ func main() {
 		http.Redirect(w, r, "/users", http.StatusSeeOther)
 	}))
 
-	router.HandleFunc("GET /deleteuser/{id}", Authorize(func(w http.ResponseWriter, r *http.Request) {
+	router.HandleFunc("GET /deleteuser/{id}", Authorize(true, func(w http.ResponseWriter, r *http.Request) {
 		tmpl["user.html"] = template.Must(template.ParseFiles("templates/user.html", "templates/_base.html"))
 		data := getSessionData(r)
 		data.Title ="Delete User"
@@ -116,7 +118,7 @@ func main() {
 		tmpl["user.html"].ExecuteTemplate(w, "base", data)
 	}))
 
-	router.HandleFunc("POST /deleteuser/{id}", Authorize(func(w http.ResponseWriter, r *http.Request) {
+	router.HandleFunc("POST /deleteuser/{id}", Authorize(true, func(w http.ResponseWriter, r *http.Request) {
 		tmpl["user.html"] = template.Must(template.ParseFiles("templates/user.html", "templates/_base.html"))
 		data := getSessionData(r)
 		data.Title ="Delete User"
@@ -141,7 +143,68 @@ func main() {
 		http.Redirect(w, r, "/users", http.StatusSeeOther)
 	}))
 
-	router.HandleFunc("GET /upload", Authorize(func(w http.ResponseWriter, r *http.Request) {
+	router.HandleFunc("GET /edituser/{id}", Authorize(true, func(w http.ResponseWriter, r *http.Request) {
+		tmpl["edituser.html"] = template.Must(template.ParseFiles("templates/edituser.html", "templates/_base.html"))
+		data := getSessionData(r)
+		data.Title ="Edit User"
+		data.Greeting = ""
+
+		id_arg		:= r.PathValue("id")
+		userId, err		:= strconv.Atoi(id_arg)
+		if err != nil {
+			errorMessage := fmt.Sprintf("Error finding user: %s\n", err.Error())
+			data.ErrorMessage = errorMessage
+			tmpl["edituser.html"].ExecuteTemplate(w, "base", data)
+			return
+		}
+		userRecord, err := GetUserById(userId)
+		data.Users = []User{userRecord}
+
+		tmpl["edituser.html"].ExecuteTemplate(w, "base", data)
+	}))
+
+	router.HandleFunc("POST /edituser/{id}", Authorize(true, func(w http.ResponseWriter, r *http.Request) {
+		tmpl["edituser.html"] = template.Must(template.ParseFiles("templates/edituser.html", "templates/_base.html"))
+		data := getSessionData(r)
+		data.Title ="Edit User"
+		data.Greeting = ""
+
+		id_arg		:= r.PathValue("id")
+		userId, err		:= strconv.Atoi(id_arg)
+		if err != nil {
+			errorMessage := fmt.Sprintf("Error finding user: %s\n", err.Error())
+			data.ErrorMessage = errorMessage
+			tmpl["edituser.html"].ExecuteTemplate(w, "base", data)
+			return
+		}
+		userRecord, err := GetUserById(userId)
+		data.Users = []User{userRecord}
+
+		userRecord.FirstName = r.FormValue("first_name")
+		userRecord.LastName = r.FormValue("last_name")
+		if !(ContainsOnlyLetters(userRecord.FirstName) && ContainsOnlyLetters(userRecord.LastName)) {
+			errorMessage := "User First and Last name must contain only letters"
+			data.ErrorMessage = errorMessage
+			tmpl["edituser.html"].ExecuteTemplate(w, "base", data)
+			return
+		}
+
+		isAdminValue := r.FormValue("administrator")
+		userRecord.Administrator = isAdminValue == "on"
+		isActiveValue := r.FormValue("user_active")
+		userRecord.Active = isActiveValue == "on"
+
+		err = UpdateUser(userRecord)
+		if err != nil {
+			errorMessage := fmt.Sprintf("Error updating user: %s\n", err.Error())
+			data.ErrorMessage = errorMessage
+			tmpl["edituser.html"].ExecuteTemplate(w, "base", data)
+			return
+		}
+		http.Redirect(w, r, "/users", http.StatusSeeOther)
+	}))
+
+	router.HandleFunc("GET /upload", Authorize(false, func(w http.ResponseWriter, r *http.Request) {
 		tmpl["upload.html"] = template.Must(template.ParseFiles("templates/upload.html", "templates/_base.html"))
 
 		data := getSessionData(r)
@@ -152,7 +215,7 @@ func main() {
 		tmpl["upload.html"].ExecuteTemplate(w, "base", data)
 	}))
 
-	router.HandleFunc("POST /upload", Authorize(func(w http.ResponseWriter, r *http.Request) {
+	router.HandleFunc("POST /upload", Authorize(false, func(w http.ResponseWriter, r *http.Request) {
 		// This will return a json response to indicate to the asychronous uploader whether
 		// the upload succeeded or failed and an error message if required
 		var response AjaxResponse
@@ -186,7 +249,7 @@ func main() {
 		json.NewEncoder(w).Encode(response)
 	}))
 
-	router.HandleFunc("GET /files", Authorize(func(w http.ResponseWriter, r *http.Request) {
+	router.HandleFunc("GET /files", Authorize(false, func(w http.ResponseWriter, r *http.Request) {
 		tmpl["files.html"] = template.Must(template.ParseFiles("templates/files.html", "templates/_base.html"))
 		data := getSessionData(r)
 		data.Title = "Files Uploaded"
@@ -259,7 +322,7 @@ func main() {
 		io.Copy(w, downloadFile)
 	})
 
-	router.HandleFunc("GET /delete/{id}/{descriptor}", Authorize(func(w http.ResponseWriter, r *http.Request) {
+	router.HandleFunc("GET /delete/{id}/{descriptor}", Authorize(false, func(w http.ResponseWriter, r *http.Request) {
 		tmpl["delete.html"] = template.Must(template.ParseFiles("templates/delete.html", "templates/_base.html"))
 		data := getSessionData(r)
 
@@ -289,7 +352,7 @@ func main() {
 
 	}))
 
-	router.HandleFunc("POST /delete/{id}/{descriptor}", Authorize(func(w http.ResponseWriter, r *http.Request) {
+	router.HandleFunc("POST /delete/{id}/{descriptor}", Authorize(false, func(w http.ResponseWriter, r *http.Request) {
 		tmpl["delete.html"] = template.Must(template.ParseFiles("templates/delete.html", "templates/_base.html"))
 		data := getSessionData(r)
 
@@ -354,6 +417,7 @@ func getSessionData(r *http.Request) PageData {
 	}
 
 	data.UserAuthenticated = true
+	data.UserAdministrator = loggedInUser.Administrator
 	data.User = loggedInUser
 	data.ErrorMessage = ""
 
@@ -366,9 +430,9 @@ func faviconHandler(w http.ResponseWriter, r *http.Request) {
 	http.ServeFile(w, r, "/static/images/favicon.ico")
 }
 
-func Authorize(f http.HandlerFunc) http.HandlerFunc {
+func Authorize(mustBeAdmin bool, f http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		authorized := AuthorizationCheck(w, r)
+		authorized := AuthorizationCheck(w, r, mustBeAdmin)
 		if !authorized {
 			http.Error(w, "Not Authorized", http.StatusForbidden)
 			return

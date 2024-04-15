@@ -39,11 +39,24 @@ func LoggedInUser(r *http.Request) (User, error) {
 	return user, err
 }
 
-func AuthorizationCheck(w http.ResponseWriter, r *http.Request) bool {
-	session, _ := store.Get(r, SessionCookie)
+func AuthorizationCheck(w http.ResponseWriter, r *http.Request, mustBeAdmin bool) bool {
+	if mustBeAdmin {
+		user, err := LoggedInUser(r)
+		if err != nil {
+			log.Println(err.Error())
+			return false
+		}
 
-	if auth, ok := session.Values["authenticated"].(bool); !ok || !auth {
-		return false
+		if !user.Administrator {
+			return false
+		}
+
+	} else {
+		session, _ := store.Get(r, SessionCookie)
+
+		if auth, ok := session.Values["authenticated"].(bool); !ok || !auth {
+			return false
+		}
 	}
 
 	return true
@@ -55,6 +68,7 @@ func loginUser(user User, w http.ResponseWriter, r *http.Request) {
 	session.Values["user-id"] = user.Id
 	session.Values["username"] = user.Username
 	session.Values["email"] = user.Email
+	session.Values["admin"] = user.Administrator
 
 	session.Save(r, w)
 }
