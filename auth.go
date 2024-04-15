@@ -159,9 +159,8 @@ func generateStateOauthCookie(w http.ResponseWriter, r *http.Request) string {
 }
 
 func getOauthConfig(r *http.Request) oauth2.Config {
-	redirectUrl := fmt.Sprintf("%v://%v/auth/google/callback", GFSConfig.Protocol, r.Host)
 	var oauthConfig = &oauth2.Config{
-		RedirectURL:  redirectUrl,
+		RedirectURL:  GFSConfig.AuthInfo.CallbackUrl,
 		ClientID:     GFSConfig.AuthInfo.ClientId,
 		ClientSecret: GFSConfig.AuthInfo.ClientSecret,
 		Scopes:       []string{"https://www.googleapis.com/auth/userinfo.email"},

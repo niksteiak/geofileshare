@@ -447,8 +447,8 @@ func getSessionData(r *http.Request) PageData {
 	data.User = loggedInUser
 	data.ErrorMessage = ""
 
-	data.DownloadBaseUrl = fmt.Sprintf("%v://%v/download",
-		GFSConfig.Protocol, r.Host)
+	data.DownloadBaseUrl = fmt.Sprintf("%v/download",
+		GFSConfig.BaseUrl)
 	return data
 }
 

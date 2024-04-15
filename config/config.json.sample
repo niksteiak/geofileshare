@@ -10,7 +10,8 @@
         "ClientId": "",
         "ClientSecret": "",
         "AuthURI": "https://accounts.google.com/o/oauth2/auth",
-        "TokenURI": "https://oauth2.googleapis.com/token"
+        "TokenURI": "https://oauth2.googleapis.com/token",
+        "CallbackUrl": "http://localhost:8080/auth/google/callback"
     },
     "SMTP": {
         "SenderAddress": "",
@@ -27,5 +28,6 @@
     "UploadDirectory": "uploads",
     "AllowedFileTypes": ".zip,.rar,.7z,.tar,.gz",
     "ApplicationPort": ":9990",
-    "Protocol": "http"
+    "Protocol": "http",
+    "BaseUrl": "http://localhost:9990/"
 }

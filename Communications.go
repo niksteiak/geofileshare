@@ -9,10 +9,8 @@ import (
 
 func SendMail(r *http.Request, fileInfo FileUploadInfo, uploader User) error {
 	fileDescriptor := ExtractDescriptor(fileInfo.StoredFilename)
-	protocol := GFSConfig.Protocol;
 
-	downloadUrl := fmt.Sprintf("%v://%v/download/%d/%v", protocol,
-		r.Host, fileInfo.RecordId, fileDescriptor)
+	downloadUrl := fmt.Sprintf("%v/download/%d/%v", GFSConfig.BaseUrl, fileInfo.RecordId, fileDescriptor)
 	messageSubject := fmt.Sprintf("GEOFILESHARE - Upload Completed for %v",
 		fileInfo.OriginalFilename)
 

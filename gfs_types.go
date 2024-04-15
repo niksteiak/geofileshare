@@ -54,6 +54,7 @@ type Config struct {
         ClientSecret string `json:"ClientSecret"`
         AuthURI      string `json:"AuthURI"`
         TokenURI     string `json:"TokenURI"`
+        CallbackUrl  string `json:"CallbackUrl"`
     } `json:"AuthInfo"`
     SMTP struct {
         SenderAddress   string  `json:"SenderAddress"`
@@ -71,6 +72,7 @@ type Config struct {
     AllowedFileTypes string `json:"AllowedFileTypes"`
     ApplicationPort string  `json:"ApplicationPort"`
     Protocol string `json:"Protocol"`
+    BaseUrl  string `json:"BaseUrl"`
 }
 
 type AjaxResponse struct {
