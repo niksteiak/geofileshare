@@ -26,5 +26,6 @@
     "SessionKey": "",
     "UploadDirectory": "uploads",
     "AllowedFileTypes": ".zip,.rar,.7z,.tar,.gz",
+    "ApplicationPort": ":9990",
     "Protocol": "http"
 }

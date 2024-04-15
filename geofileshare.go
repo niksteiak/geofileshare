@@ -409,7 +409,7 @@ func main() {
 		tmpl["index.html"].ExecuteTemplate(w, "base", data)
 	})
 
-	log.Fatal(http.ListenAndServe(":8080", router))
+	log.Fatal(http.ListenAndServe(GFSConfig.ApplicationPort, router))
 }
 
 func errorHandler(w http.ResponseWriter, r *http.Request, statusCode int) {

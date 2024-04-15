@@ -66,9 +66,10 @@ type Config struct {
         Password        string  `json:"Password"`
         SendNotifications   bool    `json:"SendNotifications"`
     } `json:"SMTP"`
-    SessionKey string `json:"SessionKey"`
+    SessionKey      string `json:"SessionKey"`
     UploadDirectory string `json:"UploadDirectory"`
     AllowedFileTypes string `json:"AllowedFileTypes"`
+    ApplicationPort string  `json:"ApplicationPort"`
     Protocol string `json:"Protocol"`
 }
 
