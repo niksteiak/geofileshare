@@ -341,8 +341,7 @@ func main() {
 		tmpl["index.html"].ExecuteTemplate(w, "base", data)
 	})
 
-
-	http.ListenAndServe(":85", router)
+	log.Fatal(http.ListenAndServe(":8080", router))
 }
 
 func getSessionData(r *http.Request) PageData {
