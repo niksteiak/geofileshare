@@ -12,6 +12,7 @@ type PageData struct {
     UserAuthenticated bool
     UserAdministrator bool
     ErrorMessage string
+    StatusCode   int
     ResponseMessage string
     Files        *[]UploadedFile
     DownloadBaseUrl string

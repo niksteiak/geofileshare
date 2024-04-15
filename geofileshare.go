@@ -396,6 +396,11 @@ func main() {
 	}))
 
 	router.HandleFunc("GET /", func(w http.ResponseWriter, r *http.Request) {
+		 if r.URL.Path != "/" {
+			errorHandler(w, r, http.StatusNotFound)
+			return
+		}
+
 		data := getSessionData(r)
 		data.Title ="Welcome to Geofileshare"
 		data.Greeting = ""
@@ -405,6 +410,27 @@ func main() {
 	})
 
 	log.Fatal(http.ListenAndServe(":8080", router))
+}
+
+func errorHandler(w http.ResponseWriter, r *http.Request, statusCode int) {
+	tmpl := template.Must(template.ParseFiles("templates/error.html"))
+	data := getSessionData(r)
+	w.WriteHeader(statusCode)
+
+	var errorMessage string
+	switch(statusCode) {
+	case http.StatusForbidden:
+		errorMessage = "Not Authorized to access this section"
+	case http.StatusNotFound:
+		errorMessage = "Section not found or not available"
+	default:
+		errorMessage = "Something has gone wrong..."
+	}
+
+	data.StatusCode = statusCode
+	data.ErrorMessage = errorMessage
+
+	tmpl.Execute(w, data)
 }
 
 func getSessionData(r *http.Request) PageData {
@@ -434,7 +460,8 @@ func Authorize(mustBeAdmin bool, f http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		authorized := AuthorizationCheck(w, r, mustBeAdmin)
 		if !authorized {
-			http.Error(w, "Not Authorized", http.StatusForbidden)
+			// http.Error(w, "Not Authorized", http.StatusForbidden)
+			errorHandler(w, r, http.StatusForbidden)
 			return
 		}
 
