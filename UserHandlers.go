@@ -14,7 +14,11 @@ func UsersListHandler(w http.ResponseWriter, r *http.Request, tmpl map[string]*t
 	data := getSessionData(r)
 	data.Title ="Registered Users"
 	data.Greeting = "The users that have access to Geofileshare are:"
-	data.Users = ReadDatabaseUsers()
+	users, err := ReadDatabaseUsers()
+	if err != nil {
+		data.ErrorMessage = err.Error()
+	}
+	data.Users = users
 
 	tmpl["dbinfo.html"].ExecuteTemplate(w, "base", data)
 }
@@ -28,8 +32,11 @@ func AddUserHandler(w http.ResponseWriter, r *http.Request, tmpl map[string]*tem
 	userEmail		:= r.FormValue("email")
 	_, err := mail.ParseAddress(userEmail)
 	if err != nil {
-		data.Users = ReadDatabaseUsers()
 		data.ErrorMessage = fmt.Sprintf("Invalid email address. %v", err.Error())
+		data.Users, err = ReadDatabaseUsers()
+		if err != nil {
+			data.ErrorMessage = fmt.Sprintf("%v. %v", data.ErrorMessage, err.Error())
+		}
 		tmpl["dbinfo.html"].ExecuteTemplate(w, "base", data)
 		return
 	}
@@ -37,8 +44,11 @@ func AddUserHandler(w http.ResponseWriter, r *http.Request, tmpl map[string]*tem
 	userFirstName	:= r.FormValue("first_name")
 	userLastName	:= r.FormValue("last_name")
 	if !(ContainsOnlyLetters(userFirstName) && ContainsOnlyLetters(userLastName)) {
-		data.Users = ReadDatabaseUsers()
 		data.ErrorMessage = "User First and Last name must contain only letters"
+		data.Users, err = ReadDatabaseUsers()
+		if err != nil {
+			data.ErrorMessage = fmt.Sprintf("%v. %v", data.ErrorMessage, err.Error())
+		}
 		tmpl["dbinfo.html"].ExecuteTemplate(w, "base", data)
 		return
 	}
@@ -47,8 +57,11 @@ func AddUserHandler(w http.ResponseWriter, r *http.Request, tmpl map[string]*tem
 
 	_, err = AddUser(userEmail, userFirstName, userLastName, isAdmin)
 	if err != nil {
-		data.Users = ReadDatabaseUsers()
 		data.ErrorMessage = err.Error()
+		data.Users, err = ReadDatabaseUsers()
+		if err != nil {
+			data.ErrorMessage = fmt.Sprintf("%v. %v", data.ErrorMessage, err.Error())
+		}
 		tmpl["dbinfo.html"].ExecuteTemplate(w, "base", data)
 		return
 	}

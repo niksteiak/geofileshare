@@ -72,6 +72,17 @@ func main() {
 		EditUserHandler(w, r, tmpl)
 	}))
 
+	router.HandleFunc("GET /usererror", func(w http.ResponseWriter, r *http.Request) {
+		tmpl["usererror.html"] = template.Must(template.ParseFiles("templates/usererror.html", "templates/_base.html"))
+
+		data := getSessionData(r)
+		data.Title = "User Error"
+		data.Greeting = "Account Not Valid"
+		data.ErrorMessage = "The user account you used is not valid or is not authorized to use the service."
+
+		tmpl["usererror.html"].ExecuteTemplate(w, "base", data)
+	})
+
 	router.HandleFunc("GET /upload", Authorize(false, func(w http.ResponseWriter, r *http.Request) {
 		tmpl["upload.html"] = template.Must(template.ParseFiles("templates/upload.html", "templates/_base.html"))
 

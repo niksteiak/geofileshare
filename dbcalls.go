@@ -19,23 +19,25 @@ func ReadConnectionInfo() string {
 	return connectionString
 }
 
-func ReadDatabaseUsers() []User {
+func ReadDatabaseUsers() ([]User, error) {
+	var retUsers []User
 	connectionString := ReadConnectionInfo()
 
 	db, err := sql.Open("mysql", connectionString)
 	if err != nil {
-		log.Fatal(err)
+		log.Print(err)
+		return retUsers, err
 	}
 
 	if err := db.Ping(); err != nil {
-		log.Fatal(err)
+		return retUsers, err
 	}
 
-	var retUsers []User
 
 	rows, err := db.Query("SELECT id, username, email, active, first_name, last_name, administrator FROM user")
 	if err != nil {
-		log.Fatal(err)
+		log.Print(err)
+		return retUsers, err
 	}
 	defer rows.Close()
 
@@ -43,29 +45,31 @@ func ReadDatabaseUsers() []User {
 		var u User
 		err := rows.Scan(&u.Id, &u.Username, &u.Email, &u.Active, &u.FirstName, &u.LastName, &u.Administrator)
 		if err != nil {
-			log.Fatal(err)
+			log.Print(err)
+			return retUsers, err
 		}
 
 		retUsers = append(retUsers, u)
 	}
 
-	return retUsers
+	return retUsers, nil
 }
 
 func GetUser(email string) (User, error) {
 	connectionString := ReadConnectionInfo()
+	var user User
 
 	db, err := sql.Open("mysql", connectionString)
 	if err != nil {
-		log.Fatal(err)
+		log.Print(err)
+		return user, err
 	}
 
-	var user User
 	query := "SELECT id, username, email, active, first_name, last_name, administrator FROM user where email = ?"
 	err = db.QueryRow(query, email).Scan(&user.Id, &user.Username, &user.Email,
 		&user.Active, &user.FirstName, &user.LastName, &user.Administrator)
 	if err != nil {
-		log.Fatal(err.Error())
+		log.Print(err)
 		return user, err
 	}
 
@@ -73,19 +77,20 @@ func GetUser(email string) (User, error) {
 }
 
 func GetUserById(userId int) (User, error) {
+	var user User
 	connectionString := ReadConnectionInfo()
 
 	db, err := sql.Open("mysql", connectionString)
 	if err != nil {
-		log.Fatal(err)
+		log.Print(err)
+		return user, err
 	}
 
-	var user User
 	query := "SELECT id, username, email, active, first_name, last_name, administrator FROM user where id = ?"
 	err = db.QueryRow(query, userId).Scan(&user.Id, &user.Username,
 		&user.Email, &user.Active, &user.FirstName, &user.LastName, &user.Administrator)
 	if err != nil {
-		log.Fatal(err.Error())
+		log.Print(err)
 		return user, err
 	}
 
@@ -97,7 +102,8 @@ func AddUser(email string, firstName string, lastName string, administrator bool
 
 	db, err := sql.Open("mysql", connectionString)
 	if err != nil {
-		log.Fatal(err)
+		log.Print(err)
+		return -1, err
 	}
 
 	username := strings.Split(email, "@")[0]
@@ -105,6 +111,7 @@ func AddUser(email string, firstName string, lastName string, administrator bool
 	query := "INSERT INTO user (username, email, active, first_name, last_name, administrator) VALUES (?, ?, ?, ?, ?, ?)"
 	result, err := db.Exec(query, username, email, true, firstName, lastName, administrator)
 	if err != nil {
+		log.Print(err)
 		return -1, err
 	}
 
@@ -117,7 +124,8 @@ func UpdateUser(userRecord User) error {
 
 	db, err := sql.Open("mysql", connectionString)
 	if err != nil {
-		log.Fatal(err)
+		log.Print(err)
+		return err
 	}
 
 	query := "UPDATE user SET first_name = ?, last_name = ?, active = ?, administrator = ? WHERE id = ?"
@@ -131,7 +139,8 @@ func DeleteUser(userId int) error {
 
 	db, err := sql.Open("mysql", connectionString)
 	if err != nil {
-		log.Fatal(err)
+		log.Print(err)
+		return err
 	}
 
 	_, err = db.Exec("DELETE FROM user WHERE id = ?", userId)
@@ -149,6 +158,7 @@ func AddUploadRecord(uploadInfo FileUploadInfo, byUser User) (int64, error) {
 	result, err := db.Exec("INSERT INTO files (added_on, added_by_id, stored_filename, original_filename, last_requested, file_size) VALUES (?, ?, ?, ?, ?, ?)",
 			time.Now(), byUser.Id, uploadInfo.StoredFilename, uploadInfo.OriginalFilename, time.Now(), uploadInfo.FileSize)
 	if err != nil {
+		log.Print(err)
 		return -1, err
 	}
 
@@ -163,6 +173,7 @@ func UploadedFiles() ([]UploadedFile, error) {
 
 	db, err := sql.Open("mysql", connectionString)
 	if err != nil {
+		log.Print(err)
 		return retFiles, err
 	}
 
@@ -179,7 +190,7 @@ func UploadedFiles() ([]UploadedFile, error) {
 		err := rows.Scan(&f.Id, &f.OriginalFilename, &f.StoredFilename, &f.UploadedById, &f.UploadedBy,
 			&f.UploadedOn, &f.Available, &f.TimesRequested, &f.LastRequested, &f.FileSize)
 		if err != nil {
-			log.Fatal(err.Error())
+			log.Print(err)
 			return retFiles, err
 		}
 
@@ -195,6 +206,7 @@ func GetFileRecord(id int, descriptor string) (UploadedFile, error) {
 	connectionString := ReadConnectionInfo()
 	db, err := sql.Open("mysql", connectionString)
 	if err != nil {
+		log.Print(err)
 		return fileInfo, err
 	}
 
@@ -208,6 +220,7 @@ func GetFileRecord(id int, descriptor string) (UploadedFile, error) {
 		&fileInfo.UploadedOn, &fileInfo.Available, &fileInfo.TimesRequested,
 		&fileInfo.LastRequested, &fileInfo.FileSize)
 	if err != nil {
+		log.Print(err)
 		return fileInfo, err
 	}
 
@@ -223,6 +236,7 @@ func UpdateFileRequestedCount(id int) error {
 	connectionString := ReadConnectionInfo()
 	db, err := sql.Open("mysql", connectionString)
 	if err != nil {
+		log.Print(err)
 		return err
 	}
 
@@ -235,6 +249,7 @@ func UpdateFileRequestedCount(id int) error {
 		&fileInfo.StoredFilename,
 		&fileInfo.UploadedOn, &fileInfo.Available, &fileInfo.TimesRequested)
 	if err != nil {
+		log.Print(err)
 		return err
 	}
 
@@ -249,6 +264,7 @@ func DeleteFileRecord(id int) error {
 	connectionString := ReadConnectionInfo()
 	db, err := sql.Open("mysql", connectionString)
 	if err != nil {
+		log.Print(err)
 		return err
 	}
 
