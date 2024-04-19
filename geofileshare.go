@@ -18,7 +18,11 @@ import (
 
 var GFSConfig Config
 
+var GFSVersion string
+
 func main() {
+	fmt.Printf("GFSVersion %v\n", GFSVersion)
+
 	GFSConfig = LoadConfiguration("config/config.json")
 	key := []byte(GFSConfig.SessionKey)
 	store = sessions.NewCookieStore(key)

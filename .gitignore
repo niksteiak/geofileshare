@@ -25,6 +25,9 @@ config.json
 # Uploads directory
 uploads/*
 
+# Distributable directory
+dist/*
+
 # VSCODE
 .vscode
 launch.json
