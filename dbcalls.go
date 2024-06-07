@@ -179,7 +179,7 @@ func UploadedFiles() ([]UploadedFile, error) {
 
 	rows, err := db.Query("SELECT F.id, F.original_filename, F.stored_filename, U.id, CONCAT(U.first_name, ' ', U.last_name) as Fullname, "+
 		"F.added_on, F.available, F.times_requested, F.last_requested, F.file_size  "+
-		"FROM files F INNER JOIN user U on U.id = F.added_by_id")
+		"FROM files F INNER JOIN user U on U.id = F.added_by_id ORDER BY F.added_on DESC")
 	if err != nil {
 		return retFiles, err
 	}
