@@ -28,6 +28,7 @@ func ReadDatabaseUsers() ([]User, error) {
 		log.Print(err)
 		return retUsers, err
 	}
+	defer db.Close()
 
 	if err := db.Ping(); err != nil {
 		return retUsers, err
@@ -64,6 +65,7 @@ func GetUser(email string) (User, error) {
 		log.Print(err)
 		return user, err
 	}
+	defer db.Close()
 
 	query := "SELECT id, username, email, active, first_name, last_name, administrator FROM user where email = ?"
 	err = db.QueryRow(query, email).Scan(&user.Id, &user.Username, &user.Email,
@@ -85,6 +87,7 @@ func GetUserById(userId int) (User, error) {
 		log.Print(err)
 		return user, err
 	}
+	defer db.Close()
 
 	query := "SELECT id, username, email, active, first_name, last_name, administrator FROM user where id = ?"
 	err = db.QueryRow(query, userId).Scan(&user.Id, &user.Username,
@@ -105,6 +108,7 @@ func AddUser(email string, firstName string, lastName string, administrator bool
 		log.Print(err)
 		return -1, err
 	}
+	defer db.Close()
 
 	username := strings.Split(email, "@")[0]
 
@@ -127,6 +131,7 @@ func UpdateUser(userRecord User) error {
 		log.Print(err)
 		return err
 	}
+	defer db.Close()
 
 	query := "UPDATE user SET first_name = ?, last_name = ?, active = ?, administrator = ? WHERE id = ?"
 	_, err = db.Exec(query, userRecord.FirstName, userRecord.LastName, userRecord.Active,
@@ -142,6 +147,7 @@ func DeleteUser(userId int) error {
 		log.Print(err)
 		return err
 	}
+	defer db.Close()
 
 	_, err = db.Exec("DELETE FROM user WHERE id = ?", userId)
 	return err
@@ -154,6 +160,7 @@ func AddUploadRecord(uploadInfo FileUploadInfo, byUser User) (int64, error) {
 	if err != nil {
 		return -1, err
 	}
+	defer db.Close()
 
 	result, err := db.Exec("INSERT INTO files (added_on, added_by_id, stored_filename, original_filename, last_requested, file_size) VALUES (?, ?, ?, ?, ?, ?)",
 			time.Now(), byUser.Id, uploadInfo.StoredFilename, uploadInfo.OriginalFilename, time.Now(), uploadInfo.FileSize)
@@ -176,6 +183,7 @@ func UploadedFiles() ([]UploadedFile, error) {
 		log.Print(err)
 		return retFiles, err
 	}
+	defer db.Close()
 
 	rows, err := db.Query("SELECT F.id, F.original_filename, F.stored_filename, U.id, CONCAT(U.first_name, ' ', U.last_name) as Fullname, "+
 		"F.added_on, F.available, F.times_requested, F.last_requested, F.file_size  "+
@@ -209,6 +217,7 @@ func GetFileRecord(id int, descriptor string) (UploadedFile, error) {
 		log.Print(err)
 		return fileInfo, err
 	}
+	defer db.Close()
 
 	query := "SELECT F.id, F.original_filename, F.stored_filename, U.id, CONCAT(U.first_name, ' ', U.last_name) as Fullname, "+
 		"F.added_on, F.available, F.times_requested, F.last_requested, F.file_size  "+
@@ -239,6 +248,7 @@ func UpdateFileRequestedCount(id int) error {
 		log.Print(err)
 		return err
 	}
+	defer db.Close()
 
 	query := "SELECT F.id, F.original_filename, F.stored_filename, "+
 		"F.added_on, F.available, F.times_requested  "+
@@ -267,6 +277,7 @@ func DeleteFileRecord(id int) error {
 		log.Print(err)
 		return err
 	}
+	defer db.Close()
 
 	_, err = db.Exec("DELETE FROM files WHERE id = ?", id)
 	return err
