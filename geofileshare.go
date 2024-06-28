@@ -145,7 +145,18 @@ func main() {
 			return
 		}
 
+		storageUsed := 0
+		for idx := 0; idx < len(files); idx++ {
+			storageUsed += files[idx].FileSize;
+		}
+
 		data.Files = &files
+		data.StorageUsed = FormatFileSize(uint64(storageUsed))
+		spaceAvailable, err := GetAvailableDiskSpace()
+		if err != nil {
+			data.ErrorMessage = fmt.Sprintf("Error getting Available Disk space: %s\n", err.Error())
+		}
+		data.SpaceAvailable = FormatFileSize(spaceAvailable)
 		tmpl["files.html"].ExecuteTemplate(w, "base", data)
 	}))
 

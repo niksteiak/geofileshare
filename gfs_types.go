@@ -4,19 +4,21 @@ import (
 )
 
 type PageData struct {
-    Title        string
-    Greeting     string
-    Names        []string
-    Users        []User
-    User         User
-    UserAuthenticated bool
-    UserAdministrator bool
-    ErrorMessage string
-    StatusCode   int
-    ResponseMessage string
-    Files        *[]UploadedFile
-    DownloadBaseUrl string
-    AllowedFileTypes string
+    Title               string
+    Greeting            string
+    Names               []string
+    Users               []User
+    User                User
+    UserAuthenticated   bool
+    UserAdministrator   bool
+    ErrorMessage        string
+    StatusCode          int
+    ResponseMessage     string
+    Files               *[]UploadedFile
+    DownloadBaseUrl     string
+    AllowedFileTypes    string
+    StorageUsed         string
+    SpaceAvailable      string
 }
 
 type User struct {
