@@ -24,6 +24,7 @@ type UploadedFile struct {
     TimesRequested      int
     LastRequested       time.Time
     FileSize            int
+    LastName		string
 }
 
 func (f *UploadedFile) GetDescriptor() string {

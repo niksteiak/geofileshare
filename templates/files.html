@@ -16,14 +16,56 @@
 <div>
     <table class="table table-striped">
         <tr>
-            <th>#</th>
-            <th>Filename</th>
-            <th>Size</th>
+            <th>
+                {{ if and (eq .SortField "FileId") (eq .SortOrder "asc") }}
+                    <a href="/files?srt=FileId&ord=desc">#</a>
+                {{ else }}
+                    <a href="/files?srt=FileId&ord=asc">#</a>
+                {{ end }}
+            </th>
+            <th>
+                {{ if and (eq .SortField "OriginalFilename") (eq .SortOrder "asc") }}
+                    <a href="/files?srt=OriginalFilename&ord=desc">Filename</a>
+                {{ else }}
+                    <a href="/files?srt=OriginalFilename&ord=asc">Filename</a>
+                {{ end }}
+            </th>
+            <th>
+                {{ if and (eq .SortField "FileSize") (eq .SortOrder "asc") }}
+                    <a href="/files?srt=FileSize&ord=desc">Size</a>
+                {{ else }}
+                    <a href="/files?srt=FileSize&ord=asc">Size</a>
+                {{ end }}
+            </th>
             <th>Download Address</th>
-            <th>Uploaded By</th>
-            <th>Uploaded On</th>
-            <th>Times Requested</th>
-            <th>Last Requested</th>
+            <th>
+                {{ if and (eq .SortField "LastName") (eq .SortOrder "asc") }}
+                    <a href="/files?srt=LastName&ord=desc">Uploaded By</a>
+                {{ else }}
+                    <a href="/files?srt=LastName&ord=asc">Uploaded By</a>
+                {{ end }}
+            </th>
+            <th>
+                {{ if and (eq .SortField "UploadedOn") (eq .SortOrder "asc") }}
+                <a href="/files?srt=UploadedOn&ord=desc">Uploaded On</a>
+                {{ else }}
+                <a href="/files?srt=UploadedOn&ord=asc">Uploaded On</a>
+                {{ end }}
+            </th>
+            <th>
+                {{ if and (eq .SortField "TimesRequested") (eq .SortOrder "asc") }}
+                <a href="/files?srt=TimesRequested&ord=desc">Times Requested</a>
+                {{ else }}
+                <a href="/files?srt=TimesRequested&ord=asc">Times Requested</a>
+                {{ end }}
+            </th>
+            <th>
+                {{ if and (eq .SortField "LastRequested") (eq .SortOrder "asc") }}
+                <a href="/files?srt=LastRequested&ord=desc">Last Requested</a>
+                {{ else }}
+                <a href="/files?srt=LastRequested&ord=asc">Last Requested</a>
+                {{ end }}
+            </th>
             <th></th>
         </tr>
         {{range .Files}}

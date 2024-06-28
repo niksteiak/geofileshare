@@ -137,7 +137,17 @@ func main() {
 		data := getSessionData(r)
 		data.Title = "Files Uploaded"
 
-		files, err := UploadedFiles()
+		urlQuery := r.URL.RawQuery
+		if urlQuery == "" {
+			data.SortField = "FileId"
+			data.SortOrder = "desc"
+		} else {
+			urlAttributes := ParseURLRawQuery(urlQuery)
+			data.SortField = urlAttributes["srt"]
+			data.SortOrder = urlAttributes["ord"]
+		}
+
+		files, err := UploadedFiles(data.SortField, data.SortOrder)
 		if err != nil {
 			errorMessage := fmt.Sprintf("Error reading upload file: %s\n", err.Error())
 			data.ErrorMessage = errorMessage

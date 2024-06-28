@@ -19,6 +19,8 @@ type PageData struct {
     AllowedFileTypes    string
     StorageUsed         string
     SpaceAvailable      string
+    SortField           string
+    SortOrder           string
 }
 
 type User struct {

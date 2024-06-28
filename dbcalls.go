@@ -7,6 +7,7 @@ import (
 	"time"
 	"errors"
 	"strings"
+	"slices"
 
 	_ "github.com/go-sql-driver/mysql"
 )
@@ -173,7 +174,7 @@ func AddUploadRecord(uploadInfo FileUploadInfo, byUser User) (int64, error) {
 	return uploadId, err
 }
 
-func UploadedFiles() ([]UploadedFile, error) {
+func UploadedFiles(sortField string, sortOrder string) ([]UploadedFile, error) {
 	connectionString := ReadConnectionInfo()
 
 	var retFiles []UploadedFile
@@ -185,9 +186,36 @@ func UploadedFiles() ([]UploadedFile, error) {
 	}
 	defer db.Close()
 
-	rows, err := db.Query("SELECT F.id, F.original_filename, F.stored_filename, U.id, CONCAT(U.first_name, ' ', U.last_name) as Fullname, "+
-		"F.added_on, F.available, F.times_requested, F.last_requested, F.file_size  "+
-		"FROM files F INNER JOIN user U on U.id = F.added_by_id ORDER BY F.added_on DESC")
+	if sortField == "" {
+		sortField = "FileId"
+	}
+	if sortOrder == "" {
+		sortOrder = "desc"
+	}
+
+	validFields := []string{
+		"FileId",
+		"OriginalFilename",
+		"UploadedOn",
+		"Available",
+		"FileSize",
+		"TimesRequested",
+		"LastRequested",
+		"LastName",
+	}
+
+	if !slices.Contains(validFields, sortField) {
+		return retFiles, errors.New("File Query not Valid")
+	}
+
+	queryString := fmt.Sprintf("SELECT F.id as FileId, F.original_filename AS OriginalFilename, F.stored_filename AS StoredFilename, "+
+		"U.id AS UserId, CONCAT(U.first_name, ' ', U.last_name) as Fullname, "+
+		"F.added_on AS UploadedOn, F.available AS Available, F.times_requested AS TimesRequested, F.last_requested AS LastRequested, "+
+		"F.file_size AS FileSize, U.last_name AS LastName "+
+		"FROM files F INNER JOIN user U on U.id = F.added_by_id ORDER BY %s %s",
+		sortField, sortOrder)
+
+	rows, err := db.Query(queryString)
 	if err != nil {
 		return retFiles, err
 	}
@@ -196,7 +224,7 @@ func UploadedFiles() ([]UploadedFile, error) {
 	for rows.Next() {
 		var f UploadedFile
 		err := rows.Scan(&f.Id, &f.OriginalFilename, &f.StoredFilename, &f.UploadedById, &f.UploadedBy,
-			&f.UploadedOn, &f.Available, &f.TimesRequested, &f.LastRequested, &f.FileSize)
+			&f.UploadedOn, &f.Available, &f.TimesRequested, &f.LastRequested, &f.FileSize, &f.LastName)
 		if err != nil {
 			log.Print(err)
 			return retFiles, err
