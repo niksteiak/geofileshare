@@ -2,6 +2,11 @@
 
 ## CHANGE LOG
 
+### Version 1.0.3 -- (DTBD)
+-------------------------------------------------------------------
+- Added indication of Storage used and space available
+- Added Sorting on Files List
+
 ### Version 1.0.2 -- June 10, 2024
 -------------------------------------------------------------------
 - Changed Files List ordering by reverse chronological order (most recent on top)
