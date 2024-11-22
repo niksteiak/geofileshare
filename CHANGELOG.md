@@ -2,7 +2,11 @@
 
 ## CHANGE LOG
 
-### Version 1.0.3 -- (DTBD)
+### Version 1.1.0 -- November 22, 2024
+-------------------------------------------------------------------
+- Fixed Document Upload to reduce memory consumption during large file uploads
+
+### Version 1.0.3 -- June 28, 2024
 -------------------------------------------------------------------
 - Added indication of Storage used and space available
 - Added Sorting on Files List
