@@ -40,12 +40,15 @@ func uploadFile(r *http.Request) (FileUploadInfo, error) {
 	}
 	defer tempFile.Close()
 
-	fileBytes, err := io.ReadAll(file)
+	// fileBytes, err := io.ReadAll(file)
+
+	// var buffer bytes.Buffer
+	_, err = io.Copy(tempFile, file)
 	if err != nil {
 		return uploadInfo, err
 	}
 
-	tempFile.Write(fileBytes)
+	// tempFile.Write(fileBytes)
 
 	uploadInfo.StoredFilename = filepath.Base(tempFile.Name())
 	return uploadInfo, nil
